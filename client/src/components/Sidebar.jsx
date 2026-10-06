@@ -107,8 +107,14 @@ export const Sidebar = () => {
                 </span>
               )}
               {item.proBadge && (
-                <span className="text-[10px] font-extrabold uppercase px-1.5 py-0.5 rounded bg-amber-400/20 text-amber-300 border border-amber-400/30">
-                  PRO
+                <span
+                  className={`text-[10px] font-extrabold uppercase px-1.5 py-0.5 rounded ${
+                    user?.isPro
+                      ? 'bg-amber-400 text-black shadow-amber-400/50 shadow-sm font-black'
+                      : 'bg-amber-400/20 text-amber-300 border border-amber-400/30'
+                  }`}
+                >
+                  {user?.isPro ? 'PRO ✓' : 'PRO'}
                 </span>
               )}
             </NavLink>
@@ -129,7 +135,14 @@ export const Sidebar = () => {
               className="w-9 h-9 rounded-xl object-cover border border-repx-borderLight"
             />
             <div className="truncate max-w-[100px]">
-              <div className="text-xs font-bold text-white truncate">{user?.name}</div>
+              <div className="text-xs font-bold text-white truncate flex items-center gap-1">
+                <span className="truncate">{user?.name}</span>
+                {user?.isPro && (
+                  <span className="text-[8px] bg-amber-400 text-black px-1 py-0.2 rounded font-black tracking-wider shrink-0">
+                    PRO
+                  </span>
+                )}
+              </div>
               <div className="text-[11px] text-slate-400 truncate">@{user?.username}</div>
             </div>
           </div>

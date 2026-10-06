@@ -39,7 +39,15 @@ const SubscriptionSchema = new mongoose.Schema(
     },
     paymentMethod: {
       type: String,
-      default: 'Card / UPI Simulation',
+      default: 'Google Pay UPI',
+    },
+    utrNumber: {
+      type: String,
+      default: '',
+    },
+    transactionId: {
+      type: String,
+      default: '',
     },
   },
   {
