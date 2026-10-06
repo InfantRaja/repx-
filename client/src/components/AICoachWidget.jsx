@@ -17,7 +17,8 @@ import {
   ChevronDown
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import axios from 'axios';
+import API from '../services/api';
+import { generateCoachReply } from '../utils/aiCoachEngine';
 
 export const AICoachWidget = () => {
   const { user } = useAuth();
@@ -159,51 +160,42 @@ export const AICoachWidget = () => {
     setInputMessage('');
     setLoading(true);
 
+    let replyText = '';
+    const coachContext = {
+      name: user?.name,
+      fitnessGoal: user?.fitnessGoal || 'Strength & Hypertrophy',
+      experienceLevel: user?.experienceLevel || 'Intermediate',
+      currentStreak: user?.streak ?? 0
+    };
+
     try {
-      const token = localStorage.getItem('repx_token');
-      const res = await axios.post(
-        '/api/ai/coach',
-        {
-          message: textToSend,
-          context: {
-            name: user?.name,
-            fitnessGoal: user?.fitnessGoal || 'Strength & Hypertrophy',
-            experienceLevel: user?.experienceLevel || 'Intermediate',
-            currentStreak: user?.streak || 0
-          }
-        },
-        {
-          headers: token ? { Authorization: `Bearer ${token}` } : {}
-        }
-      );
-
-      const replyText = res.data?.reply || 'I am ready to help you with your fitness goals.';
-
-      const coachMsg = {
-        id: (Date.now() + 1).toString(),
-        sender: 'coach',
-        text: replyText,
-        timestamp: new Date().toISOString()
-      };
-
-      setMessages((prev) => [...prev, coachMsg]);
-
-      if (speechVoiceEnabled) {
-        speakText(replyText);
-      }
-    } catch (err) {
-      console.error('AI Coach error:', err);
-      const errorMsg = {
-        id: (Date.now() + 1).toString(),
-        sender: 'coach',
-        text: 'Sorry athlete, I encountered a temporary connection issue. Please make sure the REPX server is active and try again.',
-        timestamp: new Date().toISOString(),
-        isError: true
-      };
-      setMessages((prev) => [...prev, errorMsg]);
-    } finally {
-      setLoading(false);
+      const res = await API.post('/ai/coach', {
+        message: textToSend,
+        context: coachContext
+      });
+      replyText = res.data?.reply;
+    } catch (apiErr) {
+      console.warn('Backend /api/ai/coach unreachable, using local AI engine fallback:', apiErr?.message);
+      replyText = generateCoachReply(textToSend, coachContext);
     }
+
+    if (!replyText) {
+      replyText = generateCoachReply(textToSend, coachContext);
+    }
+
+    const coachMsg = {
+      id: (Date.now() + 1).toString(),
+      sender: 'coach',
+      text: replyText,
+      timestamp: new Date().toISOString()
+    };
+
+    setMessages((prev) => [...prev, coachMsg]);
+
+    if (speechVoiceEnabled) {
+      speakText(replyText);
+    }
+    setLoading(false);
   };
 
   const handleCopy = (id, text) => {
