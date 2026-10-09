@@ -61,6 +61,36 @@ if (process.env.NODE_ENV !== 'production') {
   app.use(morgan('dev'));
 }
 
+// Database connection helper with connection caching for serverless / Vercel
+let isConnected = false;
+
+export const connectDB = async () => {
+  if (isConnected || mongoose.connection.readyState >= 1) {
+    return;
+  }
+  try {
+    await mongoose.connect(MONGODB_URI, {
+      dbName: DB_NAME,
+      serverSelectionTimeoutMS: 5000,
+    });
+    isConnected = true;
+    console.log('MongoDB: CONNECTED');
+  } catch (err) {
+    console.error('MongoDB connection error:', err.message);
+    if (!process.env.VERCEL) {
+      console.error('Please ensure MongoDB is running or check your MONGODB_URI.');
+    }
+  }
+};
+
+// Auto-connect to database BEFORE handling any API requests
+app.use(async (req, res, next) => {
+  if (process.env.VERCEL || mongoose.connection.readyState !== 1) {
+    await connectDB();
+  }
+  next();
+});
+
 // Health Check Endpoint (Requirement 25)
 app.get('/api/health', (req, res) => {
   const isConnected = mongoose.connection.readyState === 1;
@@ -86,35 +116,6 @@ app.use('/api', socialRoutes); // /api/feed, /api/posts, /api/friends
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/subscription', subscriptionRoutes);
 app.use('/api/ai', aiRoutes);
-
-// Database connection helper with connection caching for serverless / Vercel
-let isConnected = false;
-
-export const connectDB = async () => {
-  if (isConnected || mongoose.connection.readyState >= 1) {
-    return;
-  }
-  try {
-    await mongoose.connect(MONGODB_URI, {
-      dbName: DB_NAME,
-    });
-    isConnected = true;
-    console.log('MongoDB: CONNECTED');
-  } catch (err) {
-    console.error('MongoDB connection error:', err.message);
-    if (!process.env.VERCEL) {
-      console.error('Please ensure MongoDB is running or check your MONGODB_URI.');
-    }
-  }
-};
-
-// Auto-connect on Vercel serverless requests
-app.use(async (req, res, next) => {
-  if (process.env.VERCEL) {
-    await connectDB();
-  }
-  next();
-});
 
 // Fallback error handlers
 app.use(notFound);
