@@ -65,8 +65,13 @@ export default function App() {
   }, [canGoBack]);
 
   const handleSaveUrl = async (newUrl) => {
-    const formatted = newUrl.trim();
+    let formatted = newUrl.trim();
     if (!formatted) return;
+
+    // Automatically add https:// if user didn't type http:// or https://
+    if (!/^https?:\/\//i.test(formatted)) {
+      formatted = `https://${formatted}`;
+    }
 
     try {
       await AsyncStorage.setItem(STORAGE_KEY, formatted);
