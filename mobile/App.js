@@ -17,13 +17,13 @@ import { StatusBar } from 'expo-status-bar';
 import { WebView } from 'react-native-webview';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const DEFAULT_SERVER_URL = 'http://10.102.99.107:5173';
+const DEFAULT_SERVER_URL = 'https://repx-plum.vercel.app';
 const STORAGE_KEY = 'repx_mobile_server_url';
 
 export default function App() {
   const [serverUrl, setServerUrl] = useState(DEFAULT_SERVER_URL);
   const [inputUrl, setInputUrl] = useState(DEFAULT_SERVER_URL);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
   const [errorDetails, setErrorDetails] = useState('');
   const [canGoBack, setCanGoBack] = useState(false);
@@ -31,6 +31,14 @@ export default function App() {
   const [webKey, setWebKey] = useState(1);
 
   const webViewRef = useRef(null);
+
+  // Auto-dismiss splash screen after maximum 2 seconds
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsInitialLoading(false);
+    }, 2000);
+    return () => clearTimeout(timer);
+  }, []);
 
   // Load saved server URL on initial mount
   useEffect(() => {
@@ -83,13 +91,13 @@ export default function App() {
     setInputUrl(formatted);
     setIsSettingsOpen(false);
     setHasError(false);
-    setIsLoading(true);
+    setIsInitialLoading(true);
     setWebKey((k) => k + 1);
   };
 
   const handleRetry = () => {
     setHasError(false);
-    setIsLoading(true);
+    setIsInitialLoading(true);
     setWebKey((k) => k + 1);
     if (webViewRef.current) {
       webViewRef.current.reload();
@@ -100,24 +108,6 @@ export default function App() {
     <SafeAreaProvider>
       <SafeAreaView style={styles.container}>
         <StatusBar style="dark" backgroundColor="#FFFFFF" />
-
-        {/* Floating Quick Settings / Info Pill */}
-        <View style={styles.topToolbar}>
-          <TouchableOpacity
-            style={styles.settingsBadge}
-            onPress={() => {
-              setInputUrl(serverUrl);
-              setIsSettingsOpen(true);
-            }}
-            activeOpacity={0.8}
-          >
-            <View style={styles.onlineDot} />
-            <Text style={styles.settingsBadgeText} numberOfLines={1}>
-              {serverUrl.replace(/^https?:\/\//, '')}
-            </Text>
-            <Text style={styles.settingsIconText}>⚙️</Text>
-          </TouchableOpacity>
-        </View>
 
         {/* Main Application WebView */}
         <View style={styles.webviewWrapper}>
@@ -135,16 +125,17 @@ export default function App() {
             onNavigationStateChange={(navState) => {
               setCanGoBack(navState.canGoBack);
             }}
-            onLoadStart={() => {
-              setIsLoading(true);
-              setHasError(false);
+            onLoadProgress={({ nativeEvent }) => {
+              if (nativeEvent.progress >= 0.6) {
+                setIsInitialLoading(false);
+              }
             }}
             onLoadEnd={() => {
-              setIsLoading(false);
+              setIsInitialLoading(false);
             }}
             onError={(syntheticEvent) => {
               const { nativeEvent } = syntheticEvent;
-              setIsLoading(false);
+              setIsInitialLoading(false);
               setHasError(true);
               setErrorDetails(nativeEvent.description || 'Connection failed');
             }}
@@ -157,15 +148,14 @@ export default function App() {
             }}
           />
 
-          {/* Loading Overlay */}
-          {isLoading && !hasError && (
+          {/* Splash Loading Overlay (only shown for a moment on initial cold start) */}
+          {isInitialLoading && !hasError && (
             <View style={styles.loadingContainer}>
               <View style={styles.logoBadge}>
                 <Text style={styles.logoBadgeText}>REPX</Text>
               </View>
-              <ActivityIndicator size="large" color="#0084FF" style={{ marginTop: 20 }} />
-              <Text style={styles.loadingText}>Connecting to REPX Fitness...</Text>
-              <Text style={styles.loadingSubtext}>{serverUrl}</Text>
+              <ActivityIndicator size="large" color="#2563EB" style={{ marginTop: 20 }} />
+              <Text style={styles.loadingText}>Loading REPX...</Text>
             </View>
           )}
 

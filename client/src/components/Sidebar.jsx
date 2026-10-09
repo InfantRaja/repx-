@@ -45,17 +45,14 @@ export const Sidebar = () => {
 
   return (
     <aside className="hidden lg:flex flex-col w-64 bg-white border-r border-slate-200 h-screen sticky top-0 shrink-0 select-none">
-      {/* Brand Header: HEVY Style */}
+      {/* Brand Header: REPX Brand */}
       <div className="px-6 pt-6 pb-4 flex items-center justify-between">
         <NavLink to="/feed" className="flex items-center gap-2.5 group">
-          {/* Hevy Dumbbell Icon */}
           <div className="w-8 h-8 rounded-lg bg-black text-white flex items-center justify-center font-black">
-            <svg viewBox="0 0 24 24" className="w-5 h-5 fill-current" stroke="currentColor" strokeWidth="1.5">
-              <path d="M4 7a2 2 0 0 1 2-2h1a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7zm11 0a2 2 0 0 1 2-2h1a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2V7zM9 11h6v2H9z" />
-            </svg>
+            <span className="text-sm font-black tracking-tighter">RX</span>
           </div>
           <span className="font-sans font-black text-2xl tracking-tight text-slate-900">
-            HEVY
+            REPX
           </span>
         </NavLink>
       </div>
@@ -110,11 +107,11 @@ export const Sidebar = () => {
         </button>
       </div>
 
-      {/* HEVY PRO Banner (From Screenshot) */}
+      {/* REPX PRO Banner */}
       <div className="px-4 py-2">
         <div className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-200/80">
           <div className="flex items-center gap-1.5">
-            <span className="font-black text-xs text-slate-900">HEVY</span>
+            <span className="font-black text-xs text-slate-900">REPX</span>
             <span className="bg-amber-400 text-black text-[9px] font-black px-1.5 py-0.5 rounded">
               PRO
             </span>

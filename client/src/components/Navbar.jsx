@@ -53,15 +53,13 @@ export const Navbar = ({ title = 'Dashboard' }) => {
     <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200 px-4 md:px-8 py-3.5 flex items-center justify-between">
       {/* Left side: Page Title / Mobile Brand */}
       <div className="flex items-center gap-3">
-        {/* Mobile Logo: Hevy Style */}
+        {/* Mobile Logo: REPX Brand */}
         <NavLink to="/feed" className="lg:hidden flex items-center gap-2">
           <div className="w-7 h-7 rounded-lg bg-black text-white flex items-center justify-center font-black">
-            <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current">
-              <path d="M4 7a2 2 0 0 1 2-2h1a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7zm11 0a2 2 0 0 1 2-2h1a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2V7zM9 11h6v2H9z" />
-            </svg>
+            <span className="text-xs font-black tracking-tighter">RX</span>
           </div>
           <span className="font-sans font-black text-lg tracking-tight text-slate-900">
-            HEVY
+            REPX
           </span>
         </NavLink>
 
