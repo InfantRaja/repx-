@@ -8,7 +8,7 @@ on:
       - master
     paths:
       - 'mobile/**'
-      - 'client/**'
+      - '.github/workflows/build-apk.yml'
 
 jobs:
   build-apk:
@@ -20,22 +20,21 @@ jobs:
         uses: actions/checkout@v4
 
       - name: ☕ Set up Java 17
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: 🟢 Set up Node.js 20
+      - name: 🟢 Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: 'npm'
           cache-dependency-path: mobile/package-lock.json
 
-      - name: 📱 Set up Android SDK
-        uses: android-actions/setup-android@v3
-        with:
-          packages: platform-tools
+      - name: 📱 Accept Android SDK Licenses
+        run: |
+          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
 
       - name: 📦 Install Mobile Dependencies
         working-directory: ./mobile
@@ -43,11 +42,13 @@ jobs:
 
       - name: ⚙️ Expo Prebuild (Generate Native Android Project)
         working-directory: ./mobile
-        run: npx expo prebuild --platform android --clean
+        run: npx expo prebuild --platform android --clean --no-install
 
       - name: 🔨 Build Debug APK with Gradle
         working-directory: ./mobile/android
-        run: ./gradlew assembleDebug --no-daemon
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleDebug --no-daemon
 
       - name: 📤 Upload APK Artifact
         uses: actions/upload-artifact@v4
