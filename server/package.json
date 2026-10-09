@@ -7,7 +7,9 @@
   "scripts": {
     "start": "node server.js",
     "dev": "node --watch server.js",
-    "seed": "node seed/seed.js"
+    "seed": "node seed/seed.js",
+    "build": "node -e \"console.log('Server ready')\"",
+    "vercel-build": "node -e \"console.log('Server ready')\""
   },
   "dependencies": {
     "bcryptjs": "^3.0.2",
