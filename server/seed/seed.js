@@ -9,6 +9,7 @@ import Workout from '../models/Workout.js';
 import WorkoutSession from '../models/WorkoutSession.js';
 import WorkoutSet from '../models/WorkoutSet.js';
 import Split from '../models/Split.js';
+import { allSplitsData } from './splitsData.js';
 import Measurement from '../models/Measurement.js';
 import PersonalRecord from '../models/PersonalRecord.js';
 import Follow from '../models/Follow.js';
@@ -916,22 +917,37 @@ export const seedDatabase = async () => {
 
     console.log('Inserted workout templates: Push, Pull, Legs.');
 
-    // 5. Create Default PPL Split for demoUser
-    await Split.create({
-      user: demoUser._id,
-      name: 'Elite PPL 6-Day Split',
-      description: 'Classic high-frequency Push / Pull / Legs routine with Thursday active recovery.',
-      isActive: true,
-      days: [
-        { dayNumber: 1, dayName: 'Monday', title: 'Push Day (Heavy)', workout: pushWorkout._id, targetMuscles: ['Chest', 'Shoulders', 'Triceps'] },
-        { dayNumber: 2, dayName: 'Tuesday', title: 'Pull Day (Heavy)', workout: pullWorkout._id, targetMuscles: ['Back', 'Biceps'] },
-        { dayNumber: 3, dayName: 'Wednesday', title: 'Legs Day (Quad Focus)', workout: legsWorkout._id, targetMuscles: ['Quads', 'Hamstrings', 'Calves'] },
-        { dayNumber: 4, dayName: 'Thursday', title: 'Active Recovery', isRestDay: true, targetMuscles: ['Recovery', 'Mobility'] },
-        { dayNumber: 5, dayName: 'Friday', title: 'Push Day (Hypertrophy)', workout: pushWorkout._id, targetMuscles: ['Chest', 'Shoulders', 'Triceps'] },
-        { dayNumber: 6, dayName: 'Saturday', title: 'Pull Day (Hypertrophy)', workout: pullWorkout._id, targetMuscles: ['Back', 'Biceps'] },
-        { dayNumber: 7, dayName: 'Sunday', title: 'Legs Day (Hamstring Focus)', workout: legsWorkout._id, targetMuscles: ['Hamstrings', 'Glutes', 'Calves'] },
-      ],
-    });
+    // 5. Create All 10 Workout Splits
+    for (let i = 0; i < allSplitsData.length; i++) {
+      const splitInfo = allSplitsData[i];
+      const enrichedDays = splitInfo.days.map((d) => {
+        let matchedWorkout = null;
+        if (!d.isRestDay) {
+          const title = d.title.toLowerCase();
+          if (title.includes('push') && pushWorkout) matchedWorkout = pushWorkout._id;
+          else if (title.includes('pull') && pullWorkout) matchedWorkout = pullWorkout._id;
+          else if (title.includes('leg') && legsWorkout) matchedWorkout = legsWorkout._id;
+        }
+        return {
+          dayNumber: d.dayNumber,
+          dayName: d.dayName,
+          title: d.title,
+          isRestDay: d.isRestDay,
+          targetMuscles: d.targetMuscles,
+          workout: matchedWorkout,
+        };
+      });
+
+      await Split.create({
+        user: demoUser._id,
+        name: splitInfo.name,
+        description: splitInfo.description,
+        isActive: i === 0,
+        isTemplate: true,
+        days: enrichedDays,
+      });
+    }
+    console.log(`Inserted all ${allSplitsData.length} workout split templates.`);
 
     // 6. Seed Past Workout Sessions for Demo User (over past 30 days)
     const sessionHistoryConfigs = [

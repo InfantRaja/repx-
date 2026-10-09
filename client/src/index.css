@@ -4,17 +4,18 @@
 
 @layer base {
   * {
-    border-color: #232938;
+    border-color: #E2E8F0;
   }
   
   body {
-    background-color: #060709;
-    color: #F8FAFC;
+    background-color: #F8FAFC;
+    color: #0F172A;
     overflow-x: hidden;
     -webkit-tap-highlight-color: transparent;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   }
 
-  /* Hide default number input arrows for clean gym numeric entry */
+  /* Clean gym numeric entry */
   input[type=number]::-webkit-inner-spin-button,
   input[type=number]::-webkit-outer-spin-button {
     -webkit-appearance: none;
@@ -25,55 +26,45 @@
   }
 }
 
-/* Custom Sleek Dark Scrollbar */
+/* Minimalist Clean Scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #0A0C10;
+  background: #F8FAFC;
 }
 ::-webkit-scrollbar-thumb {
-  background: #232A3C;
+  background: #CBD5E1;
   border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #D4FF00;
+  background: #94A3B8;
 }
 
-/* Glassmorphic Gym Cards */
+/* Crisp Clean HEVY Cards */
 .repx-card {
-  background: rgba(14, 17, 23, 0.75);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.07);
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.03);
 }
 
 .repx-card-interactive {
-  background: rgba(14, 17, 23, 0.85);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.03);
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .repx-card-interactive:hover {
-  border-color: rgba(212, 255, 0, 0.4);
-  transform: translateY(-2px);
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 0 20px -3px rgba(212, 255, 0, 0.15);
+  border-color: #CBD5E1;
+  box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.06);
 }
 
-/* Glow and gradient borders */
-.repx-border-glow {
-  position: relative;
+/* Hide scrollbar utility */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
 }
-.repx-border-glow::after {
-  content: '';
-  position: absolute;
-  inset: -1px;
-  border-radius: inherit;
-  padding: 1px;
-  background: linear-gradient(135deg, rgba(212, 255, 0, 0.6), transparent 60%);
-  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
-  pointer-events: none;
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }

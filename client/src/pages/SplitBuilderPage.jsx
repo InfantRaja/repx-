@@ -5,12 +5,14 @@ import {
   Check,
   Trash2,
   Edit2,
-  ChevronUp,
-  ChevronDown,
   Moon,
   Dumbbell,
-  ArrowRight,
   Sparkles,
+  Layers,
+  Flame,
+  Clock,
+  RotateCcw,
+  Zap,
 } from 'lucide-react';
 import API from '../services/api';
 import LoadingSkeleton from '../components/LoadingSkeleton';
@@ -19,12 +21,15 @@ export const SplitBuilderPage = () => {
   const [splits, setSplits] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeSplitId, setActiveSplitId] = useState(null);
+  const [activeTab, setActiveTab] = useState('library'); // 'library' | 'my-splits'
+  const [selectedDayFilter, setSelectedDayFilter] = useState('all'); // 'all' | '6' | '5' | '4' | '3'
+  const [actionSuccessMsg, setActionSuccessMsg] = useState('');
 
   // Edit / Create mode state
   const [isEditing, setIsEditing] = useState(false);
   const [editingSplitId, setEditingSplitId] = useState(null);
   const [splitName, setSplitName] = useState('My Custom Split');
-  const [splitDescription, setSplitDescription] = useState('High frequency personalized schedule.');
+  const [splitDescription, setSplitDescription] = useState('Personalized 7-day schedule.');
 
   const defaultDays = [
     { dayNumber: 1, dayName: 'Monday', title: 'Push Day (Heavy)', isRestDay: false, targetMuscles: ['Chest', 'Shoulders', 'Triceps'] },
@@ -38,6 +43,14 @@ export const SplitBuilderPage = () => {
 
   const [days, setDays] = useState(defaultDays);
   const [submitting, setSubmitting] = useState(false);
+
+  // Compute current day of week (1 = Monday, 7 = Sunday)
+  const currentDayOfWeek = (() => {
+    const d = new Date().getDay();
+    return d === 0 ? 7 : d; // Sunday is 7
+  })();
+
+  const dayNames = ['', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
   const fetchSplits = async () => {
     try {
@@ -59,20 +72,43 @@ export const SplitBuilderPage = () => {
     fetchSplits();
   }, []);
 
-  const handleActivateSplit = async (id) => {
+  const showNotification = (msg) => {
+    setActionSuccessMsg(msg);
+    setTimeout(() => setActionSuccessMsg(''), 4000);
+  };
+
+  const handleActivateSplit = async (id, name) => {
     try {
       const res = await API.put(`/splits/${id}/activate`);
       if (res.data?.success) {
-        setActiveSplitId(id);
+        setActiveSplitId(res.data.data?._id || id);
+        showNotification(`⚡ "${name}" activated as your current weekly program!`);
         fetchSplits();
       }
-    } catch (e) {}
+    } catch (e) {
+      console.error('Failed to activate split:', e);
+    }
+  };
+
+  const handleReSeedSplits = async () => {
+    try {
+      setLoading(true);
+      const res = await API.post('/splits/seed-templates');
+      if (res.data?.success) {
+        showNotification('✅ Successfully re-seeded all 10 workout splits!');
+        fetchSplits();
+      }
+    } catch (e) {
+      console.error('Failed to reseed splits:', e);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleCreateNew = () => {
     setEditingSplitId(null);
-    setSplitName('Custom PPL Split');
-    setSplitDescription('Tailored 7-day schedule with active recovery.');
+    setSplitName('Custom Workout Split');
+    setSplitDescription('Tailored 7-day schedule designed for my fitness goals.');
     setDays(defaultDays);
     setIsEditing(true);
   };
@@ -86,11 +122,14 @@ export const SplitBuilderPage = () => {
   };
 
   const handleDeleteSplit = async (id) => {
-    if (!window.confirm('Delete this split schedule?')) return;
+    if (!window.confirm('Delete this custom split schedule?')) return;
     try {
       await API.delete(`/splits/${id}`);
+      showNotification('Split deleted successfully.');
       fetchSplits();
-    } catch (e) {}
+    } catch (e) {
+      console.error('Failed to delete split:', e);
+    }
   };
 
   const handleDayTitleChange = (idx, newTitle) => {
@@ -133,6 +172,7 @@ export const SplitBuilderPage = () => {
           description: splitDescription.trim(),
           days,
         });
+        showNotification(`Updated "${splitName}" successfully!`);
       } else {
         await API.post('/splits', {
           name: splitName.trim(),
@@ -140,6 +180,7 @@ export const SplitBuilderPage = () => {
           days,
           isActive: true,
         });
+        showNotification(`Created and activated "${splitName}"!`);
       }
       setIsEditing(false);
       fetchSplits();
@@ -150,28 +191,169 @@ export const SplitBuilderPage = () => {
     }
   };
 
+  // Find the currently active split
+  const activeSplit = splits.find((s) => s._id === activeSplitId || s.isActive);
+  const todayWorkout = activeSplit?.days?.find((d) => d.dayNumber === currentDayOfWeek);
+
+  // Filter splits for library
+  const templateSplits = splits.filter((s) => s.isTemplate);
+  const userCustomSplits = splits.filter((s) => !s.isTemplate);
+
+  const filteredTemplates = templateSplits.filter((split) => {
+    if (selectedDayFilter === 'all') return true;
+    const workoutDaysCount = (split.days || []).filter((d) => !d.isRestDay).length;
+    return workoutDaysCount.toString() === selectedDayFilter;
+  });
+
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="space-y-6 animate-fade-in pb-12">
+      {/* Toast Notification */}
+      {actionSuccessMsg && (
+        <div className="fixed top-5 right-5 z-50 bg-repx-900 border border-repx-volt/60 shadow-volt-glow text-white px-5 py-3 rounded-2xl flex items-center gap-3 animate-fade-in text-sm font-bold">
+          <Zap className="w-5 h-5 text-repx-volt shrink-0 animate-pulse" />
+          <span>{actionSuccessMsg}</span>
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl md:text-3xl font-black font-display text-white tracking-tight">
+          <div className="flex items-center gap-2 mb-1">
+            <span className="px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-600 border border-blue-200 text-[10px] font-black tracking-wider uppercase">
+              10 SCIENCE-BACKED SPLITS
+            </span>
+          </div>
+          <h1 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight">
             Workout Split Builder
           </h1>
-          <p className="text-xs md:text-sm text-slate-400 mt-0.5">
-            Organize weekly training cadence, assign muscle focuses, and schedule muscle recovery.
+          <p className="text-xs md:text-sm text-slate-500 mt-1 max-w-2xl">
+            Choose from all 10 battle-tested workout splits (PPL, Upper/Lower, Arnold, Bro Split, Full Body, PHUL, PHAT) or craft your own personalized weekly cadence.
           </p>
         </div>
 
         {!isEditing && (
-          <button
-            onClick={handleCreateNew}
-            className="inline-flex items-center gap-2 px-5 py-3 rounded-2xl bg-repx-volt text-black font-black font-display text-sm hover:bg-repx-voltHover transition-all shadow-volt-glow active:scale-95"
-          >
-            <Plus className="w-4 h-4" /> Build Custom Split
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleReSeedSplits}
+              className="inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 text-xs font-bold transition-all"
+              title="Ensure all 10 split templates are inserted"
+            >
+              <RotateCcw className="w-3.5 h-3.5" /> Reset Splits
+            </button>
+            <button
+              onClick={handleCreateNew}
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-600 text-white font-bold text-xs hover:bg-blue-700 transition-all shadow-sm active:scale-95"
+            >
+              <Plus className="w-4 h-4" /> Build Custom Split
+            </button>
+          </div>
         )}
       </div>
+
+      {/* TODAY'S WORKOUT HIGHLIGHT BANNER (Hevy Light Theme) */}
+      {activeSplit && (
+        <div className="bg-white rounded-2xl p-5 md:p-6 border border-slate-200 shadow-sm">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex items-start gap-4">
+              <div className="w-12 h-12 rounded-2xl bg-blue-50 border border-blue-100 flex items-center justify-center shrink-0 text-blue-600">
+                {todayWorkout?.isRestDay ? <Moon className="w-6 h-6" /> : <Flame className="w-6 h-6" />}
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] font-black uppercase tracking-wider text-blue-600">
+                    TODAY ({dayNames[currentDayOfWeek]})
+                  </span>
+                  <span className="text-slate-300">•</span>
+                  <span className="text-xs text-slate-500 font-medium">
+                    Active Program: <strong className="text-slate-900">{activeSplit.name}</strong>
+                  </span>
+                </div>
+                <h3 className="text-lg md:text-xl font-bold text-slate-900 mt-0.5">
+                  {todayWorkout?.title || 'Scheduled Workout'}
+                </h3>
+                <div className="flex items-center gap-1.5 mt-2 flex-wrap">
+                  {todayWorkout?.isRestDay ? (
+                    <span className="text-xs text-blue-600 bg-blue-50 border border-blue-200 px-2.5 py-0.5 rounded-full font-bold">
+                      Rest & System Recovery Day
+                    </span>
+                  ) : (
+                    (todayWorkout?.targetMuscles || []).map((m, i) => (
+                      <span
+                        key={i}
+                        className="text-[11px] font-bold px-2.5 py-0.5 rounded-md bg-slate-100 text-slate-700 border border-slate-200"
+                      >
+                        {m}
+                      </span>
+                    ))
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 shrink-0">
+              <span className="text-xs font-bold text-slate-600 bg-slate-100 px-3 py-1.5 rounded-xl border border-slate-200">
+                {activeSplit.days?.filter((d) => !d.isRestDay).length} Workout Days / Week
+              </span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* NAVIGATION TABS */}
+      {!isEditing && (
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-repx-border pb-3 gap-3">
+          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
+            <button
+              onClick={() => setActiveTab('library')}
+              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs md:text-sm font-black font-display shrink-0 transition-all ${
+                activeTab === 'library'
+                  ? 'bg-repx-volt text-black shadow-volt-glow'
+                  : 'bg-repx-850 text-slate-400 hover:text-white border border-repx-border'
+              }`}
+            >
+              <Layers className="w-4 h-4" />
+              Split Library ({templateSplits.length})
+            </button>
+
+            <button
+              onClick={() => setActiveTab('my-splits')}
+              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs md:text-sm font-black font-display shrink-0 transition-all ${
+                activeTab === 'my-splits'
+                  ? 'bg-repx-volt text-black shadow-volt-glow'
+                  : 'bg-repx-850 text-slate-400 hover:text-white border border-repx-border'
+              }`}
+            >
+              <Calendar className="w-4 h-4" />
+              My Custom Splits ({userCustomSplits.length})
+            </button>
+          </div>
+
+          {/* Days per week filter for library */}
+          {activeTab === 'library' && (
+            <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
+              {[
+                { label: 'All (10)', val: 'all' },
+                { label: '6 Days', val: '6' },
+                { label: '5 Days', val: '5' },
+                { label: '4 Days', val: '4' },
+                { label: '3 Days', val: '3' },
+              ].map((f) => (
+                <button
+                  key={f.val}
+                  onClick={() => setSelectedDayFilter(f.val)}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold shrink-0 transition-all ${
+                    selectedDayFilter === f.val
+                      ? 'bg-repx-volt/20 text-repx-volt border border-repx-volt/40'
+                      : 'text-slate-400 hover:text-white bg-repx-850/60 border border-transparent'
+                  }`}
+                >
+                  {f.label}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* EDIT / CREATE SPLIT FORM */}
       {isEditing ? (
@@ -179,12 +361,12 @@ export const SplitBuilderPage = () => {
           <div className="repx-card rounded-3xl p-6 border border-repx-volt/40 shadow-volt-glow space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-repx-border">
               <h3 className="text-lg font-black font-display text-white">
-                {editingSplitId ? 'Edit Split Schedule' : 'Create New Split'}
+                {editingSplitId ? 'Customize Split Schedule' : 'Create New Split'}
               </h3>
               <button
                 type="button"
                 onClick={() => setIsEditing(false)}
-                className="text-xs text-slate-400 hover:text-white"
+                className="text-xs text-slate-400 hover:text-white px-3 py-1 rounded-lg bg-repx-800"
               >
                 Cancel
               </button>
@@ -213,7 +395,7 @@ export const SplitBuilderPage = () => {
                   type="text"
                   value={splitDescription}
                   onChange={(e) => setSplitDescription(e.target.value)}
-                  placeholder="e.g. Quad focus on Wed, Hamstring focus on Sun"
+                  placeholder="e.g. High intensity hypertrophy schedule"
                   className="w-full bg-repx-900 border border-repx-border rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-repx-volt"
                 />
               </div>
@@ -299,115 +481,252 @@ export const SplitBuilderPage = () => {
           </div>
         </form>
       ) : (
-        /* LIST OF SAVED SPLITS */
+        /* SPLITS LIST */
         <div className="space-y-6">
           {loading ? (
             <LoadingSkeleton type="card" count={3} />
           ) : (
-            <div className="space-y-6">
-              {splits.map((split) => {
-                const isActive = split._id === activeSplitId || split.isActive;
-
-                return (
-                  <div
-                    key={split._id}
-                    className={`repx-card rounded-3xl p-6 md:p-8 border transition-all ${
-                      isActive
-                        ? 'border-2 border-repx-volt/60 bg-repx-900 shadow-volt-glow'
-                        : 'border-repx-border bg-repx-850/60'
-                    }`}
-                  >
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-repx-border">
-                      <div>
-                        <div className="flex items-center gap-2 mb-1.5">
-                          {isActive && (
-                            <span className="text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full bg-repx-volt text-black shadow-volt-glow">
-                              ACTIVE SPLIT
-                            </span>
-                          )}
-                          <span className="text-xs text-slate-400 font-medium">
-                            7 Days Cycle
-                          </span>
-                        </div>
-                        <h2 className="text-2xl font-black font-display text-white">
-                          {split.name}
-                        </h2>
-                        <p className="text-xs text-slate-400 mt-0.5">{split.description}</p>
-                      </div>
-
-                      <div className="flex items-center gap-2">
-                        {!isActive && (
-                          <button
-                            onClick={() => handleActivateSplit(split._id)}
-                            className="px-4 py-2.5 rounded-xl bg-repx-volt text-black font-extrabold font-display text-xs hover:bg-repx-voltHover transition-all shadow-volt-glow"
-                          >
-                            SET AS ACTIVE
-                          </button>
-                        )}
-                        <button
-                          onClick={() => handleEditSplit(split)}
-                          className="p-2.5 rounded-xl bg-repx-800 hover:bg-repx-750 text-slate-300 border border-repx-border text-xs font-bold"
-                          title="Edit Split"
-                        >
-                          <Edit2 className="w-4 h-4" />
-                        </button>
-                        {!split.isTemplate && (
-                          <button
-                            onClick={() => handleDeleteSplit(split._id)}
-                            className="p-2.5 rounded-xl bg-repx-800 hover:bg-repx-crimson/20 text-repx-crimson border border-repx-border text-xs font-bold"
-                            title="Delete"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        )}
-                      </div>
+            <>
+              {/* TAB 1: SPLIT LIBRARY */}
+              {activeTab === 'library' && (
+                <div className="space-y-6">
+                  {filteredTemplates.length === 0 ? (
+                    <div className="repx-card rounded-3xl p-8 text-center border border-repx-border">
+                      <p className="text-slate-400 text-sm">No split templates match this day filter.</p>
+                      <button
+                        onClick={() => setSelectedDayFilter('all')}
+                        className="mt-3 px-4 py-2 rounded-xl bg-repx-800 text-xs font-bold text-repx-volt"
+                      >
+                        Reset Filter
+                      </button>
                     </div>
+                  ) : (
+                    filteredTemplates.map((split) => {
+                      const isActive = split._id === activeSplitId || split.isActive;
+                      const workoutDays = (split.days || []).filter((d) => !d.isRestDay).length;
 
-                    {/* 7 Days Schedule Cards */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-7 gap-2.5 mt-6">
-                      {(split.days || defaultDays).map((day) => (
+                      return (
                         <div
-                          key={day.dayNumber}
-                          className={`rounded-2xl p-3 border flex flex-col justify-between min-h-[110px] ${
-                            day.isRestDay
-                              ? 'bg-repx-950/60 border-repx-border/50 text-slate-500'
-                              : 'bg-repx-900 border-repx-borderLight text-slate-200'
+                          key={split._id}
+                          className={`bg-white rounded-2xl p-6 md:p-8 border transition-all shadow-sm ${
+                            isActive
+                              ? 'border-2 border-blue-600'
+                              : 'border-slate-200 hover:border-slate-300'
                           }`}
                         >
-                          <div>
-                            <div className="text-[10px] font-black uppercase tracking-wider text-slate-400">
-                              {day.dayName}
+                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-100">
+                            <div>
+                              <div className="flex items-center gap-2 mb-2 flex-wrap">
+                                {isActive && (
+                                  <span className="text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full bg-blue-600 text-white shadow-sm">
+                                    ACTIVE SPLIT
+                                  </span>
+                                )}
+                                <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 border border-slate-200">
+                                  {workoutDays} DAYS / WEEK
+                                </span>
+                              </div>
+                              <h2 className="text-xl md:text-2xl font-bold text-slate-900">
+                                {split.name}
+                              </h2>
+                              <p className="text-xs md:text-sm text-slate-500 mt-1 max-w-2xl">
+                                {split.description}
+                              </p>
                             </div>
-                            <div className="text-xs font-black font-display text-white mt-1 leading-snug">
-                              {day.title}
+
+                            <div className="flex items-center gap-2 shrink-0">
+                              {!isActive ? (
+                                <button
+                                  onClick={() => handleActivateSplit(split._id, split.name)}
+                                  className="px-4 py-2.5 rounded-xl bg-blue-600 text-white font-bold text-xs hover:bg-blue-700 transition-all shadow-sm active:scale-95 flex items-center gap-1.5"
+                                >
+                                  <Zap className="w-3.5 h-3.5" /> SET AS ACTIVE
+                                </button>
+                              ) : (
+                                <span className="px-3.5 py-2 rounded-xl bg-blue-50 border border-blue-200 text-blue-600 font-bold text-xs flex items-center gap-1.5">
+                                  <Check className="w-3.5 h-3.5" /> CURRENT PROGRAM
+                                </span>
+                              )}
+                              <button
+                                onClick={() => handleEditSplit(split)}
+                                className="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 text-xs font-bold flex items-center gap-1.5 transition-all"
+                                title="Customize this split"
+                              >
+                                <Edit2 className="w-3.5 h-3.5" /> Customize
+                              </button>
                             </div>
                           </div>
 
-                          <div className="mt-2">
-                            {day.isRestDay ? (
-                              <span className="text-[10px] font-bold text-blue-400 flex items-center gap-1">
-                                <Moon className="w-3 h-3" /> Recovery
-                              </span>
-                            ) : (
-                              <div className="flex flex-wrap gap-1">
-                                {(day.targetMuscles || []).slice(0, 2).map((m, i) => (
-                                  <span
-                                    key={i}
-                                    className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-repx-800 text-repx-volt"
-                                  >
-                                    {m}
-                                  </span>
-                                ))}
+                          {/* 7 Days Cards - Horizontal swipeable on phone, responsive grid on desktop */}
+                          <div className="flex overflow-x-auto pb-2 gap-2.5 mt-5 no-scrollbar sm:grid sm:grid-cols-2 lg:grid-cols-7">
+                            {(split.days || defaultDays).map((day) => (
+                              <div
+                                key={day.dayNumber}
+                                className={`min-w-[135px] sm:min-w-0 rounded-2xl p-3 border flex flex-col justify-between min-h-[110px] shrink-0 sm:shrink ${
+                                  day.isRestDay
+                                    ? 'bg-slate-50 border-slate-100 text-slate-400'
+                                    : 'bg-slate-50/80 border-slate-200 text-slate-700'
+                                }`}
+                              >
+                                <div>
+                                  <div className="text-[10px] font-black uppercase tracking-wider text-slate-400">
+                                    {day.dayName}
+                                  </div>
+                                  <div className="text-xs font-bold text-slate-900 mt-1 leading-snug">
+                                    {day.title}
+                                  </div>
+                                </div>
+
+                                <div className="mt-2">
+                                  {day.isRestDay ? (
+                                    <span className="text-[10px] font-bold text-blue-600 flex items-center gap-1">
+                                      <Moon className="w-3 h-3" /> Recovery
+                                    </span>
+                                  ) : (
+                                    <div className="flex flex-wrap gap-1">
+                                      {(day.targetMuscles || []).slice(0, 2).map((m, i) => (
+                                        <span
+                                          key={i}
+                                          className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-white text-blue-600 border border-slate-200"
+                                        >
+                                          {m}
+                                        </span>
+                                      ))}
+                                    </div>
+                                  )}
+                                </div>
                               </div>
-                            )}
+                            ))}
                           </div>
                         </div>
-                      ))}
+                      );
+                    })
+                  )}
+                </div>
+              )}
+
+              {/* TAB 2: MY CUSTOM SPLITS */}
+              {activeTab === 'my-splits' && (
+                <div className="space-y-6">
+                  {userCustomSplits.length === 0 ? (
+                    <div className="repx-card rounded-3xl p-10 text-center border border-repx-border space-y-4">
+                      <div className="w-14 h-14 rounded-2xl bg-repx-850 flex items-center justify-center mx-auto text-repx-volt border border-repx-border">
+                        <Calendar className="w-7 h-7" />
+                      </div>
+                      <h3 className="text-lg font-black font-display text-white">No Custom Splits Yet</h3>
+                      <p className="text-xs text-slate-400 max-w-md mx-auto">
+                        You can build a split from scratch, or pick any split from the library and click "Customize" to personalize it for your body.
+                      </p>
+                      <button
+                        onClick={handleCreateNew}
+                        className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-repx-volt text-black font-black font-display text-xs hover:bg-repx-voltHover transition-all shadow-volt-glow"
+                      >
+                        <Plus className="w-4 h-4" /> Create Custom Split
+                      </button>
                     </div>
-                  </div>
-                );
-              })}
-            </div>
+                  ) : (
+                    userCustomSplits.map((split) => {
+                      const isActive = split._id === activeSplitId || split.isActive;
+
+                      return (
+                        <div
+                          key={split._id}
+                          className={`repx-card rounded-3xl p-6 md:p-8 border transition-all ${
+                            isActive
+                              ? 'border-2 border-repx-volt/70 bg-repx-900 shadow-volt-glow'
+                              : 'border-repx-border bg-repx-850/60'
+                          }`}
+                        >
+                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-repx-border">
+                            <div>
+                              <div className="flex items-center gap-2 mb-1.5">
+                                {isActive && (
+                                  <span className="text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full bg-repx-volt text-black shadow-volt-glow">
+                                    ACTIVE SPLIT
+                                  </span>
+                                )}
+                                <span className="text-xs text-slate-400 font-medium">Custom User Split</span>
+                              </div>
+                              <h2 className="text-2xl font-black font-display text-white">
+                                {split.name}
+                              </h2>
+                              <p className="text-xs text-slate-400 mt-0.5">{split.description}</p>
+                            </div>
+
+                            <div className="flex items-center gap-2">
+                              {!isActive && (
+                                <button
+                                  onClick={() => handleActivateSplit(split._id, split.name)}
+                                  className="px-4 py-2.5 rounded-xl bg-repx-volt text-black font-extrabold font-display text-xs hover:bg-repx-voltHover transition-all shadow-volt-glow"
+                                >
+                                  SET AS ACTIVE
+                                </button>
+                              )}
+                              <button
+                                onClick={() => handleEditSplit(split)}
+                                className="p-2.5 rounded-xl bg-repx-800 hover:bg-repx-750 text-slate-300 border border-repx-border text-xs font-bold"
+                                title="Edit Split"
+                              >
+                                <Edit2 className="w-4 h-4" />
+                              </button>
+                              <button
+                                onClick={() => handleDeleteSplit(split._id)}
+                                className="p-2.5 rounded-xl bg-repx-800 hover:bg-repx-crimson/20 text-repx-crimson border border-repx-border text-xs font-bold"
+                                title="Delete"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </div>
+                          </div>
+
+                          {/* 7 Days Schedule Cards - Horizontal swipeable on phone, responsive grid on desktop */}
+                          <div className="flex overflow-x-auto pb-2 gap-2.5 mt-5 no-scrollbar sm:grid sm:grid-cols-2 lg:grid-cols-7">
+                            {(split.days || defaultDays).map((day) => (
+                              <div
+                                key={day.dayNumber}
+                                className={`min-w-[135px] sm:min-w-0 rounded-2xl p-3 border flex flex-col justify-between min-h-[110px] shrink-0 sm:shrink ${
+                                  day.isRestDay
+                                    ? 'bg-repx-950/60 border-repx-border/50 text-slate-500'
+                                    : 'bg-repx-900 border-repx-borderLight text-slate-200'
+                                }`}
+                              >
+                                <div>
+                                  <div className="text-[10px] font-black uppercase tracking-wider text-slate-400">
+                                    {day.dayName}
+                                  </div>
+                                  <div className="text-xs font-black font-display text-white mt-1 leading-snug">
+                                    {day.title}
+                                  </div>
+                                </div>
+
+                                <div className="mt-2">
+                                  {day.isRestDay ? (
+                                    <span className="text-[10px] font-bold text-blue-400 flex items-center gap-1">
+                                      <Moon className="w-3 h-3" /> Recovery
+                                    </span>
+                                  ) : (
+                                    <div className="flex flex-wrap gap-1">
+                                      {(day.targetMuscles || []).slice(0, 2).map((m, i) => (
+                                        <span
+                                          key={i}
+                                          className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-repx-800 text-repx-volt"
+                                        >
+                                          {m}
+                                        </span>
+                                      ))}
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
+              )}
+            </>
           )}
         </div>
       )}

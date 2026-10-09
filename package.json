@@ -8,10 +8,15 @@
     "client": "npm run dev --prefix client",
     "server": "node --watch server/server.js",
     "seed": "node server/seed/seed.js",
+    "seed:splits": "node server/seed/seedSplits.js",
     "dev": "concurrently \"npm run server\" \"npm run client\"",
+    "mobile": "npm start --prefix mobile",
+    "mobile:tunnel": "npx expo start --tunnel --prefix mobile",
+    "mobile:apk": "npm run build:apk --prefix mobile",
+    "dev:all": "concurrently \"npm run server\" \"npm run client\" \"npm run mobile\"",
     "build": "npm --prefix client install && npm --prefix client run build",
     "vercel-build": "npm --prefix client install && npm --prefix client run build",
-    "install:all": "npm install && npm install --prefix server && npm install --prefix client"
+    "install:all": "npm install && npm install --prefix server && npm install --prefix client && npm install --prefix mobile"
   },
   "keywords": [
     "fitness",

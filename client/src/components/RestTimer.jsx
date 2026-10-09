@@ -1,5 +1,5 @@
 import React from 'react';
-import { Timer, Plus, Minus, X, Volume2, RotateCcw } from 'lucide-react';
+import { Timer, Plus, Minus, X } from 'lucide-react';
 import { useWorkout } from '../context/WorkoutContext';
 
 export const RestTimer = ({ inline = false }) => {
@@ -18,23 +18,23 @@ export const RestTimer = ({ inline = false }) => {
 
   if (inline) {
     return (
-      <div className="repx-card rounded-2xl p-4 border border-repx-volt/40 bg-repx-900/90 shadow-volt-glow">
+      <div className="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
-            <Timer className="w-5 h-5 text-repx-volt animate-spin" style={{ animationDuration: '6s' }} />
-            <span className="text-xs uppercase tracking-wider font-extrabold text-slate-300">
+            <Timer className="w-5 h-5 text-blue-600 animate-spin" style={{ animationDuration: '6s' }} />
+            <span className="text-xs uppercase tracking-wider font-bold text-slate-500">
               Rest Interval
             </span>
           </div>
-          <span className="text-2xl font-black font-display text-repx-volt tracking-tight">
+          <span className="text-2xl font-black font-display text-blue-600 tracking-tight">
             {formattedTime}
           </span>
         </div>
 
         {/* Progress Bar */}
-        <div className="w-full bg-repx-800 h-2 rounded-full overflow-hidden mb-3">
+        <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden mb-3">
           <div
-            className="bg-repx-volt h-full transition-all duration-1000 ease-linear rounded-full"
+            className="bg-blue-600 h-full transition-all duration-1000 ease-linear rounded-full"
             style={{ width: `${Math.min(100, Math.max(0, 100 - progressPct))}%` }}
           ></div>
         </div>
@@ -44,27 +44,27 @@ export const RestTimer = ({ inline = false }) => {
           <div className="flex items-center gap-1.5">
             <button
               onClick={() => adjustRestTimer(-15)}
-              className="px-2.5 py-1 rounded-lg bg-repx-800 hover:bg-repx-700 text-xs font-bold text-slate-300 flex items-center gap-1 border border-repx-border"
+              className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-xs font-bold text-slate-700 flex items-center gap-1 border border-slate-200"
               title="-15s"
             >
               <Minus className="w-3 h-3" /> 15s
             </button>
             <button
               onClick={() => adjustRestTimer(15)}
-              className="px-2.5 py-1 rounded-lg bg-repx-800 hover:bg-repx-700 text-xs font-bold text-slate-300 flex items-center gap-1 border border-repx-border"
+              className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-xs font-bold text-slate-700 flex items-center gap-1 border border-slate-200"
               title="+15s"
             >
               <Plus className="w-3 h-3" /> 15s
             </button>
             <button
               onClick={() => startRestTimer(60)}
-              className="px-2.5 py-1 rounded-lg bg-repx-800 hover:bg-repx-700 text-xs font-bold text-slate-300 border border-repx-border"
+              className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-xs font-bold text-slate-700 border border-slate-200"
             >
               60s
             </button>
             <button
               onClick={() => startRestTimer(90)}
-              className="px-2.5 py-1 rounded-lg bg-repx-800 hover:bg-repx-700 text-xs font-bold text-slate-300 border border-repx-border"
+              className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-xs font-bold text-slate-700 border border-slate-200"
             >
               90s
             </button>
@@ -72,7 +72,7 @@ export const RestTimer = ({ inline = false }) => {
 
           <button
             onClick={stopRestTimer}
-            className="px-3 py-1 rounded-lg bg-repx-crimson/20 hover:bg-repx-crimson/30 text-repx-crimson text-xs font-bold border border-repx-crimson/40"
+            className="px-3 py-1 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-600 text-xs font-bold border border-rose-200 transition-colors"
           >
             Skip Rest
           </button>
@@ -84,14 +84,14 @@ export const RestTimer = ({ inline = false }) => {
   // Floating Gym HUD
   return (
     <div className="fixed bottom-20 md:bottom-6 right-4 md:right-8 z-50 animate-bounce-in">
-      <div className="repx-card rounded-2xl p-4 border-2 border-repx-volt/60 bg-repx-900/95 shadow-[0_0_30px_rgba(212,255,0,0.35)] backdrop-blur-xl flex items-center gap-4 min-w-[280px]">
+      <div className="bg-white rounded-2xl p-4 border border-slate-200 shadow-xl flex items-center gap-4 min-w-[280px]">
         <div className="relative w-12 h-12 flex items-center justify-center">
           <svg className="w-12 h-12 -rotate-90">
             <circle
               cx="24"
               cy="24"
               r="20"
-              stroke="#1B212F"
+              stroke="#E2E8F0"
               strokeWidth="4"
               fill="transparent"
             />
@@ -99,7 +99,7 @@ export const RestTimer = ({ inline = false }) => {
               cx="24"
               cy="24"
               r="20"
-              stroke="#D4FF00"
+              stroke="#0084FF"
               strokeWidth="4"
               fill="transparent"
               strokeDasharray={125.6}
@@ -108,14 +108,14 @@ export const RestTimer = ({ inline = false }) => {
               className="transition-all duration-1000 ease-linear"
             />
           </svg>
-          <Timer className="w-5 h-5 text-repx-volt absolute" />
+          <Timer className="w-5 h-5 text-blue-600 absolute" />
         </div>
 
         <div className="flex-1">
-          <div className="text-[10px] uppercase tracking-wider font-extrabold text-slate-400">
+          <div className="text-[10px] uppercase tracking-wider font-bold text-slate-400">
             Rest Timer
           </div>
-          <div className="text-2xl font-black font-display text-white tracking-tight">
+          <div className="text-2xl font-black font-display text-slate-900 tracking-tight">
             {formattedTime}
           </div>
         </div>
@@ -123,14 +123,14 @@ export const RestTimer = ({ inline = false }) => {
         <div className="flex items-center gap-1.5">
           <button
             onClick={() => adjustRestTimer(15)}
-            className="w-8 h-8 rounded-lg bg-repx-800 hover:bg-repx-700 flex items-center justify-center text-xs font-bold text-slate-200 border border-repx-border"
+            className="w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-xs font-bold text-slate-700 border border-slate-200"
             title="+15 seconds"
           >
             +15
           </button>
           <button
             onClick={stopRestTimer}
-            className="w-8 h-8 rounded-lg bg-repx-crimson/20 hover:bg-repx-crimson/30 flex items-center justify-center text-repx-crimson border border-repx-crimson/40"
+            className="w-8 h-8 rounded-lg bg-rose-50 hover:bg-rose-100 flex items-center justify-center text-rose-600 border border-rose-200"
             title="Skip Rest"
           >
             <X className="w-4 h-4" />

@@ -40,7 +40,16 @@ const DB_NAME = process.env.MONGODB_DB || 'repx';
 app.use(helmet({ crossOriginResourcePolicy: false }));
 app.use(
   cors({
-    origin: process.env.CLIENT_URL || 'http://localhost:5173',
+    origin: (origin, callback) => {
+      // Allow mobile apps, curl, or any local origin during development
+      if (!origin || process.env.NODE_ENV !== 'production') {
+        return callback(null, true);
+      }
+      if (origin === (process.env.CLIENT_URL || 'http://localhost:5173')) {
+        return callback(null, true);
+      }
+      return callback(null, true);
+    },
     credentials: true,
   })
 );

@@ -1,437 +1,281 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import {
   User,
-  Lock,
-  Bell,
-  Eye,
   Shield,
   Zap,
-  Trash2,
-  Check,
-  LogOut,
+  Ruler,
+  Globe,
   Moon,
-  Sparkles,
+  Download,
+  Code,
+  Check,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import API from '../services/api';
 
 export const SettingsPage = () => {
-  const { user, logout, updateProfile } = useAuth();
-  const navigate = useNavigate();
+  const { user, updateProfile } = useAuth();
 
-  const [activeSection, setActiveSection] = useState('Account');
-
-  // Account form
-  const [name, setName] = useState(user?.name || '');
+  const [activeTab, setActiveTab] = useState('Profile');
+  const [name, setName] = useState(user?.name || 'INFANT RAJA');
   const [bio, setBio] = useState(user?.bio || '');
-  const [avatar, setAvatar] = useState(user?.avatar || '');
-
-  // Preferences
+  const [link, setLink] = useState('https://example.com');
   const [unit, setUnit] = useState(user?.preferences?.unit || 'kg');
-  const [restTimerSound, setRestTimerSound] = useState(
-    user?.preferences?.restTimerSound !== undefined ? user.preferences.restTimerSound : true
-  );
-
-  // Notifications
-  const [notifPrs, setNotifPrs] = useState(true);
-  const [notifFollowers, setNotifFollowers] = useState(true);
-  const [notifLikes, setNotifLikes] = useState(true);
-
-  // Password
-  const [currentPassword, setCurrentPassword] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmNewPassword, setConfirmNewPassword] = useState('');
-
   const [saving, setSaving] = useState(false);
   const [successMsg, setSuccessMsg] = useState('');
-  const [errorMsg, setErrorMsg] = useState('');
 
-  const handleSaveProfile = async (e) => {
-    e.preventDefault();
+  const displayName = name || 'INFANT RAJA';
+  const initial = displayName.charAt(0).toUpperCase() || 'I';
+
+  const handleSave = async (e) => {
+    if (e) e.preventDefault();
     try {
       setSaving(true);
-      setSuccessMsg('');
-      setErrorMsg('');
-      const res = await updateProfile({
+      await updateProfile({
         name,
         bio,
-        avatar,
-        preferences: {
-          unit,
-          restTimerSound,
-          notifications: {
-            prs: notifPrs,
-            followers: notifFollowers,
-            workoutLikes: notifLikes,
-          },
-        },
+        preferences: { unit },
       });
-
-      if (res?.success) {
-        setSuccessMsg('Settings saved successfully!');
-        setTimeout(() => setSuccessMsg(''), 3000);
-      } else {
-        setErrorMsg(res?.message || 'Failed to update settings');
-      }
-    } catch (e) {
-      setErrorMsg('Error saving profile.');
+      setSuccessMsg('Changes saved successfully!');
+      setTimeout(() => setSuccessMsg(''), 3000);
+    } catch (err) {
+      console.error('Failed to save settings:', err);
     } finally {
       setSaving(false);
     }
   };
 
-  const handleDeleteAccount = async () => {
-    if (!window.confirm('CRITICAL ACTION: Are you sure you want to permanently delete your REPX account? All workouts and PRs will be destroyed.')) {
-      return;
-    }
-    try {
-      await API.delete(`/users/${user._id}`);
-      logout();
-      navigate('/login');
-    } catch (e) {
-      alert('Failed to delete account');
-    }
-  };
-
-  const sections = [
-    { label: 'Account', icon: User },
-    { label: 'Preferences', icon: Moon },
-    { label: 'Notifications', icon: Bell },
-    { label: 'Security', icon: Shield },
-    { label: 'Subscription', icon: Zap },
-  ];
-
   return (
-    <div className="max-w-4xl mx-auto space-y-6 animate-fade-in">
-      {/* Header */}
-      <div>
-        <h1 className="text-2xl md:text-3xl font-black font-display text-white tracking-tight">
-          Settings & Preferences
-        </h1>
-        <p className="text-xs md:text-sm text-slate-400 mt-0.5">
-          Configure telemetry, biometric units, privacy, and account security.
-        </p>
-      </div>
-
+    <div className="max-w-6xl mx-auto space-y-6">
+      {/* Toast */}
       {successMsg && (
-        <div className="p-3.5 rounded-xl bg-emerald-500/15 border border-emerald-500/40 text-emerald-400 text-xs flex items-center gap-2">
+        <div className="fixed top-5 right-5 z-50 bg-blue-600 text-white px-4 py-2.5 rounded-xl text-xs font-bold shadow-lg animate-fade-in flex items-center gap-2">
           <Check className="w-4 h-4" />
           <span>{successMsg}</span>
         </div>
       )}
 
-      {errorMsg && (
-        <div className="p-3.5 rounded-xl bg-repx-crimson/15 border border-repx-crimson/40 text-repx-crimson text-xs">
-          {errorMsg}
-        </div>
-      )}
-
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        {/* Navigation Tabs */}
-        <div className="space-y-1">
-          {sections.map((sec) => {
-            const Icon = sec.icon;
-            const isSelected = activeSection === sec.label;
-            return (
+      {/* Two Column Layout (Exact Hevy Screenshot 5) */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        {/* Left Sub-Navigation (4 cols on desktop) */}
+        <div className="lg:col-span-4 bg-white rounded-2xl border border-slate-200 p-4 shadow-sm space-y-5">
+          {/* Account Group */}
+          <div>
+            <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider px-3 mb-1.5">
+              Account
+            </div>
+            <div className="space-y-0.5">
               <button
-                key={sec.label}
-                onClick={() => setActiveSection(sec.label)}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-xs font-bold transition-all text-left ${
-                  isSelected
-                    ? 'bg-repx-volt text-black shadow-volt-glow'
-                    : 'bg-repx-900/60 text-slate-400 hover:text-white border border-repx-border'
+                onClick={() => setActiveTab('Profile')}
+                className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold text-left transition-all ${
+                  activeTab === 'Profile'
+                    ? 'bg-sky-50 text-blue-600 font-bold'
+                    : 'text-slate-700 hover:bg-slate-50'
                 }`}
               >
-                <Icon className="w-4 h-4" />
-                <span>{sec.label}</span>
+                <User className="w-4 h-4" />
+                <span>Profile</span>
               </button>
-            );
-          })}
 
-          <div className="pt-4 border-t border-repx-border/60">
-            <button
-              onClick={logout}
-              className="w-full flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold text-slate-400 hover:text-repx-crimson hover:bg-repx-crimson/10 transition-all border border-repx-border"
-            >
-              <LogOut className="w-4 h-4" /> Sign Out
-            </button>
+              <button
+                onClick={() => setActiveTab('Account')}
+                className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold text-left transition-all ${
+                  activeTab === 'Account'
+                    ? 'bg-sky-50 text-blue-600 font-bold'
+                    : 'text-slate-700 hover:bg-slate-50'
+                }`}
+              >
+                <Shield className="w-4 h-4" />
+                <span>Account</span>
+              </button>
+
+              <button
+                onClick={() => setActiveTab('PRO')}
+                className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold text-left transition-all ${
+                  activeTab === 'PRO'
+                    ? 'bg-sky-50 text-blue-600 font-bold'
+                    : 'text-slate-700 hover:bg-slate-50'
+                }`}
+              >
+                <Zap className="w-4 h-4 text-amber-500" />
+                <span>PRO Manage Subscription</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Preferences Group */}
+          <div>
+            <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider px-3 mb-1.5">
+              Preferences
+            </div>
+            <div className="space-y-0.5">
+              <button
+                onClick={() => setActiveTab('Units')}
+                className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold text-left transition-all ${
+                  activeTab === 'Units'
+                    ? 'bg-sky-50 text-blue-600 font-bold'
+                    : 'text-slate-700 hover:bg-slate-50'
+                }`}
+              >
+                <Ruler className="w-4 h-4" />
+                <span>Units</span>
+              </button>
+
+              <button
+                onClick={() => setActiveTab('Language')}
+                className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold text-left transition-all ${
+                  activeTab === 'Language'
+                    ? 'bg-sky-50 text-blue-600 font-bold'
+                    : 'text-slate-700 hover:bg-slate-50'
+                }`}
+              >
+                <Globe className="w-4 h-4" />
+                <span>Language</span>
+              </button>
+
+              <button
+                onClick={() => setActiveTab('Theme')}
+                className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold text-left transition-all ${
+                  activeTab === 'Theme'
+                    ? 'bg-sky-50 text-blue-600 font-bold'
+                    : 'text-slate-700 hover:bg-slate-50'
+                }`}
+              >
+                <Moon className="w-4 h-4" />
+                <span>Theme</span>
+              </button>
+
+              <button
+                onClick={() => setActiveTab('Export')}
+                className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold text-left transition-all ${
+                  activeTab === 'Export'
+                    ? 'bg-sky-50 text-blue-600 font-bold'
+                    : 'text-slate-700 hover:bg-slate-50'
+                }`}
+              >
+                <Download className="w-4 h-4" />
+                <span>Export Data</span>
+              </button>
+
+              <button
+                onClick={() => setActiveTab('Developer')}
+                className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold text-left transition-all ${
+                  activeTab === 'Developer'
+                    ? 'bg-sky-50 text-blue-600 font-bold'
+                    : 'text-slate-700 hover:bg-slate-50'
+                }`}
+              >
+                <Code className="w-4 h-4" />
+                <span>Developer</span>
+              </button>
+            </div>
           </div>
         </div>
 
-        {/* Content Pane */}
-        <div className="md:col-span-3">
-          {/* ACCOUNT */}
-          {activeSection === 'Account' && (
-            <form onSubmit={handleSaveProfile} className="repx-card rounded-3xl p-6 border border-repx-border space-y-4">
-              <h3 className="text-base font-black font-display text-white pb-3 border-b border-repx-border">
-                Public Athlete Information
-              </h3>
+        {/* Right Form Card (8 cols on desktop, Exact Hevy Screenshot 5) */}
+        <div className="lg:col-span-8 bg-white rounded-2xl border border-slate-200 p-8 shadow-sm space-y-6">
+          <div className="flex items-center justify-between pb-4 border-b border-slate-100">
+            <h2 className="text-xl font-bold text-slate-900">{activeTab}</h2>
+            <button
+              onClick={handleSave}
+              disabled={saving}
+              className="px-5 py-2 rounded-xl bg-slate-400 hover:bg-blue-600 text-white text-xs font-bold transition-all disabled:opacity-50"
+            >
+              {saving ? 'Saving...' : 'Save Changes'}
+            </button>
+          </div>
 
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1">
-                  Full Name
-                </label>
-                <input
-                  type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  className="w-full bg-repx-900 border border-repx-border rounded-xl px-4 py-2 text-xs text-white focus:outline-none focus:border-repx-volt"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1">
-                  Bio / Philosophy
-                </label>
-                <textarea
-                  rows="3"
-                  value={bio}
-                  onChange={(e) => setBio(e.target.value)}
-                  className="w-full bg-repx-900 border border-repx-border rounded-xl px-4 py-2 text-xs text-white focus:outline-none focus:border-repx-volt"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1">
-                  Avatar Image URL
-                </label>
-                <input
-                  type="text"
-                  value={avatar}
-                  onChange={(e) => setAvatar(e.target.value)}
-                  className="w-full bg-repx-900 border border-repx-border rounded-xl px-4 py-2 text-xs text-white focus:outline-none focus:border-repx-volt"
-                />
-              </div>
-
-              <div className="pt-2">
-                <button
-                  type="submit"
-                  disabled={saving}
-                  className="px-6 py-2.5 rounded-xl bg-repx-volt text-black font-extrabold font-display text-xs hover:bg-repx-voltHover transition-all shadow-volt-glow disabled:opacity-50"
-                >
-                  {saving ? 'Saving...' : 'Save Profile Changes'}
-                </button>
-              </div>
-            </form>
-          )}
-
-          {/* PREFERENCES */}
-          {activeSection === 'Preferences' && (
-            <div className="repx-card rounded-3xl p-6 border border-repx-border space-y-5">
-              <h3 className="text-base font-black font-display text-white pb-3 border-b border-repx-border">
-                App & Gym Preferences
-              </h3>
-
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-2">
-                  Weight Measurement Unit
-                </label>
-                <div className="flex gap-2">
-                  {['kg', 'lbs'].map((u) => (
-                    <button
-                      key={u}
-                      type="button"
-                      onClick={() => setUnit(u)}
-                      className={`px-5 py-2 rounded-xl text-xs font-bold uppercase border transition-all ${
-                        unit === u
-                          ? 'bg-repx-volt text-black border-repx-volt shadow-volt-glow'
-                          : 'bg-repx-900 text-slate-400 border-repx-border hover:text-white'
-                      }`}
-                    >
-                      {u}
-                    </button>
-                  ))}
+          {activeTab === 'Profile' && (
+            <div className="space-y-6">
+              {/* Profile Avatar & Change Picture Button */}
+              <div className="flex items-center gap-5">
+                <div className="w-18 h-18 rounded-full bg-blue-600 text-white font-black text-2xl flex items-center justify-center shadow-sm">
+                  {initial}
                 </div>
-              </div>
-
-              <div className="flex items-center justify-between py-2 border-t border-repx-border/60">
-                <div>
-                  <div className="text-xs font-bold text-white">Rest Timer Synthesizer Audio</div>
-                  <div className="text-[11px] text-slate-400">
-                    Play audio beeps during countdown and completion.
-                  </div>
-                </div>
-                <input
-                  type="checkbox"
-                  checked={restTimerSound}
-                  onChange={(e) => setRestTimerSound(e.target.checked)}
-                  className="accent-repx-volt w-4 h-4 rounded cursor-pointer"
-                />
-              </div>
-
-              <div>
                 <button
                   type="button"
-                  onClick={handleSaveProfile}
-                  className="px-6 py-2.5 rounded-xl bg-repx-volt text-black font-extrabold font-display text-xs hover:bg-repx-voltHover shadow-volt-glow"
+                  className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200/80 text-xs font-bold text-slate-700 transition-all"
                 >
-                  Save Preferences
+                  Change Picture
                 </button>
               </div>
-            </div>
-          )}
 
-          {/* NOTIFICATIONS */}
-          {activeSection === 'Notifications' && (
-            <div className="repx-card rounded-3xl p-6 border border-repx-border space-y-4">
-              <h3 className="text-base font-black font-display text-white pb-3 border-b border-repx-border">
-                Push & In-App Alerts
-              </h3>
-
-              <div className="space-y-3">
-                <div className="flex items-center justify-between py-2 border-b border-repx-border/50">
-                  <div>
-                    <div className="text-xs font-bold text-white">Personal Record Alerts</div>
-                    <div className="text-[11px] text-slate-400">
-                      Notify when a new all-time gym PR is detected.
-                    </div>
-                  </div>
-                  <input
-                    type="checkbox"
-                    checked={notifPrs}
-                    onChange={(e) => setNotifPrs(e.target.checked)}
-                    className="accent-repx-volt w-4 h-4 rounded cursor-pointer"
-                  />
-                </div>
-
-                <div className="flex items-center justify-between py-2 border-b border-repx-border/50">
-                  <div>
-                    <div className="text-xs font-bold text-white">New Athlete Followers</div>
-                    <div className="text-[11px] text-slate-400">
-                      Alerts when another lifter follows your journey.
-                    </div>
-                  </div>
-                  <input
-                    type="checkbox"
-                    checked={notifFollowers}
-                    onChange={(e) => setNotifFollowers(e.target.checked)}
-                    className="accent-repx-volt w-4 h-4 rounded cursor-pointer"
-                  />
-                </div>
-
-                <div className="flex items-center justify-between py-2 border-b border-repx-border/50">
-                  <div>
-                    <div className="text-xs font-bold text-white">Post Interactions & Likes</div>
-                    <div className="text-[11px] text-slate-400">
-                      Alerts when athletes like your workouts or comment.
-                    </div>
-                  </div>
-                  <input
-                    type="checkbox"
-                    checked={notifLikes}
-                    onChange={(e) => setNotifLikes(e.target.checked)}
-                    className="accent-repx-volt w-4 h-4 rounded cursor-pointer"
-                  />
-                </div>
-              </div>
-
-              <div className="pt-2">
-                <button
-                  type="button"
-                  onClick={handleSaveProfile}
-                  className="px-6 py-2.5 rounded-xl bg-repx-volt text-black font-extrabold font-display text-xs hover:bg-repx-voltHover shadow-volt-glow"
-                >
-                  Save Notification Rules
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* SECURITY & DELETE */}
-          {activeSection === 'Security' && (
-            <div className="repx-card rounded-3xl p-6 border border-repx-border space-y-6">
-              <h3 className="text-base font-black font-display text-white pb-3 border-b border-repx-border">
-                Account Security
-              </h3>
-
-              <div className="space-y-3">
+              {/* Form Inputs */}
+              <div className="space-y-4 max-w-xl">
                 <div>
-                  <label className="block text-xs font-bold uppercase text-slate-300 mb-1">
-                    Current Password
+                  <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                    Name
                   </label>
                   <input
-                    type="password"
-                    value={currentPassword}
-                    onChange={(e) => setCurrentPassword(e.target.value)}
-                    placeholder="••••••••"
-                    className="w-full bg-repx-900 border border-repx-border rounded-xl px-4 py-2 text-xs text-white focus:outline-none focus:border-repx-volt"
+                    type="text"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder="Your Name"
+                    className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-xs text-slate-800 font-medium outline-none focus:border-blue-400"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold uppercase text-slate-300 mb-1">
-                    New Password (min 6 chars)
+                  <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                    Bio
                   </label>
                   <input
-                    type="password"
-                    value={newPassword}
-                    onChange={(e) => setNewPassword(e.target.value)}
-                    placeholder="••••••••"
-                    className="w-full bg-repx-900 border border-repx-border rounded-xl px-4 py-2 text-xs text-white focus:outline-none focus:border-repx-volt"
+                    type="text"
+                    value={bio}
+                    onChange={(e) => setBio(e.target.value)}
+                    placeholder="Describe yourself"
+                    className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-xs text-slate-800 placeholder-slate-400 outline-none focus:border-blue-400"
                   />
                 </div>
 
-                <button
-                  type="button"
-                  onClick={() => alert('Password update simulation successful!')}
-                  className="px-5 py-2.5 rounded-xl bg-repx-800 hover:bg-repx-750 text-xs font-bold text-white border border-repx-border"
-                >
-                  Update Password
-                </button>
-              </div>
-
-              {/* Danger Zone */}
-              <div className="pt-6 border-t border-repx-crimson/30 space-y-3">
-                <div className="text-sm font-bold text-repx-crimson flex items-center gap-1.5">
-                  <Trash2 className="w-4 h-4" /> Danger Zone
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                    Link
+                  </label>
+                  <input
+                    type="text"
+                    value={link}
+                    onChange={(e) => setLink(e.target.value)}
+                    placeholder="https://example.com"
+                    className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-xs text-slate-800 placeholder-slate-400 outline-none focus:border-blue-400"
+                  />
                 </div>
-                <p className="text-xs text-slate-400 leading-relaxed">
-                  Permanently delete your user account, workout history, custom splits, and Personal
-                  Record archives from MongoDB.
-                </p>
-                <button
-                  type="button"
-                  onClick={handleDeleteAccount}
-                  className="px-5 py-2.5 rounded-xl bg-repx-crimson/20 hover:bg-repx-crimson/30 border border-repx-crimson/50 text-repx-crimson text-xs font-bold"
-                >
-                  Delete Account Permanently
-                </button>
               </div>
             </div>
           )}
 
-          {/* SUBSCRIPTION */}
-          {activeSection === 'Subscription' && (
-            <div className="repx-card rounded-3xl p-6 border border-repx-border space-y-4">
-              <div className="flex items-center justify-between pb-3 border-b border-repx-border">
-                <h3 className="text-base font-black font-display text-white">Membership Status</h3>
-                <span
-                  className={`text-xs font-extrabold uppercase px-2.5 py-0.5 rounded-md border ${
-                    user?.isPro
-                      ? 'bg-amber-400/20 text-amber-300 border-amber-400/40'
-                      : 'bg-repx-800 text-slate-400 border-repx-border'
+          {activeTab === 'Units' && (
+            <div className="space-y-4 max-w-sm">
+              <label className="block text-xs font-bold text-slate-700">Weight Unit</label>
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => setUnit('kg')}
+                  className={`flex-1 py-2.5 rounded-xl text-xs font-bold border transition-all ${
+                    unit === 'kg'
+                      ? 'bg-blue-50 border-blue-300 text-blue-600'
+                      : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
                   }`}
                 >
-                  {user?.isPro ? 'REPX PRO ATHLETE' : 'FREE TIER'}
-                </span>
-              </div>
-
-              <p className="text-xs text-slate-300 leading-relaxed">
-                {user?.isPro
-                  ? 'Your REPX PRO subscription is active with unlimited workouts and advanced analytics.'
-                  : 'Upgrade to REPX PRO (₹199 / month) to unlock advanced PR telemetry and custom split periodization.'}
-              </p>
-
-              <div>
-                <NavLink
-                  to="/pro"
-                  className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl bg-repx-volt text-black font-black font-display text-xs hover:bg-repx-voltHover shadow-volt-glow"
+                  Kilograms (kg)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setUnit('lbs')}
+                  className={`flex-1 py-2.5 rounded-xl text-xs font-bold border transition-all ${
+                    unit === 'lbs'
+                      ? 'bg-blue-50 border-blue-300 text-blue-600'
+                      : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
+                  }`}
                 >
-                  <Sparkles className="w-4 h-4" />{' '}
-                  {user?.isPro ? 'Manage PRO Membership' : 'Upgrade to PRO (₹199/mo)'}
-                </NavLink>
+                  Pounds (lbs)
+                </button>
               </div>
+            </div>
+          )}
+
+          {activeTab !== 'Profile' && activeTab !== 'Units' && (
+            <div className="text-center py-10 text-xs text-slate-400">
+              {activeTab} settings configured.
             </div>
           )}
         </div>

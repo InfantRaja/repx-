@@ -187,14 +187,14 @@ export const WorkoutSessionPage = () => {
   if (!hasActiveWorkout || !activeSession) {
     return (
       <div className="max-w-md mx-auto py-20 text-center space-y-6 animate-fade-in">
-        <div className="w-20 h-20 mx-auto rounded-3xl bg-repx-850 border border-repx-border flex items-center justify-center text-slate-500 shadow-xl">
-          <Dumbbell className="w-10 h-10 text-repx-volt" />
+        <div className="w-20 h-20 mx-auto rounded-3xl bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600 shadow-sm">
+          <Dumbbell className="w-10 h-10 text-blue-600" />
         </div>
         <div className="space-y-2">
-          <h2 className="text-2xl font-black font-display text-white tracking-tight">
+          <h2 className="text-2xl font-black font-display text-slate-900 tracking-tight">
             No Active Workout
           </h2>
-          <p className="text-xs md:text-sm text-slate-400 max-w-sm mx-auto leading-relaxed">
+          <p className="text-xs md:text-sm text-slate-500 max-w-sm mx-auto leading-relaxed">
             You don't currently have a workout session in progress. Pick an established routine from your library or start a quick custom session.
           </p>
         </div>
@@ -203,13 +203,13 @@ export const WorkoutSessionPage = () => {
             onClick={() => {
               startWorkout({ name: 'Quick Gym Workout', targetMuscles: ['Full Body'] });
             }}
-            className="w-full sm:w-auto px-6 py-3.5 rounded-2xl bg-repx-volt text-black font-black font-display text-xs hover:bg-repx-voltHover transition-all shadow-volt-glow active:scale-95 flex items-center justify-center gap-2"
+            className="w-full sm:w-auto px-6 py-3.5 rounded-xl bg-blue-600 text-white font-bold text-sm hover:bg-blue-700 transition-all shadow-sm active:scale-95 flex items-center justify-center gap-2"
           >
             <Play className="w-4 h-4 fill-current" /> Start Quick Session
           </button>
           <button
             onClick={() => navigate('/workouts')}
-            className="w-full sm:w-auto px-6 py-3.5 rounded-2xl bg-repx-850 hover:bg-repx-800 text-white font-bold text-xs border border-repx-border transition-all"
+            className="w-full sm:w-auto px-6 py-3.5 rounded-xl bg-white hover:bg-slate-50 text-slate-700 font-bold text-sm border border-slate-200 transition-all shadow-sm"
           >
             Browse Routines
           </button>
@@ -221,32 +221,32 @@ export const WorkoutSessionPage = () => {
   return (
     <div className="max-w-3xl mx-auto space-y-4 select-none pb-20 animate-fade-in">
       {/* 1. TOP GYM HUD BAR */}
-      <div className="repx-card rounded-2xl p-4 border border-repx-border flex items-center justify-between gap-3 shadow-xl">
+      <div className="bg-white rounded-2xl p-4 border border-slate-200 flex items-center justify-between gap-3 shadow-sm">
         <div>
           <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">
             Active Workout
           </span>
-          <h1 className="text-lg md:text-xl font-black font-display text-white tracking-tight truncate max-w-[180px] md:max-w-xs">
+          <h1 className="text-lg md:text-xl font-black font-display text-slate-900 tracking-tight truncate max-w-[180px] md:max-w-xs">
             {activeSession?.workoutName || 'Live Workout'}
           </h1>
         </div>
 
         {/* Live Duration Timer */}
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-repx-900 border border-repx-borderLight">
-            <Timer className="w-4 h-4 text-repx-volt" />
-            <span className="font-mono text-base md:text-lg font-black text-white">
+        <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-100 border border-slate-200">
+            <Timer className="w-4 h-4 text-blue-600" />
+            <span className="font-mono text-base md:text-lg font-black text-slate-900">
               {formatDuration(activeSession?.elapsedSeconds || 0)}
             </span>
             <button
               onClick={activeSession?.isPaused ? resumeWorkout : pauseWorkout}
-              className="p-1 rounded-lg text-slate-400 hover:text-white"
+              className="p-1 rounded-lg text-slate-500 hover:text-slate-900"
               title={activeSession?.isPaused ? 'Resume Timer' : 'Pause Timer'}
             >
               {activeSession?.isPaused ? (
-                <Play className="w-3.5 h-3.5 fill-current text-emerald-400" />
+                <Play className="w-3.5 h-3.5 fill-current text-emerald-600" />
               ) : (
-                <Pause className="w-3.5 h-3.5 fill-current text-amber-400" />
+                <Pause className="w-3.5 h-3.5 fill-current text-amber-500" />
               )}
             </button>
           </div>
@@ -255,7 +255,7 @@ export const WorkoutSessionPage = () => {
           <button
             type="button"
             onClick={() => setShowDiscardModal(true)}
-            className="px-3 md:px-4 py-2 rounded-xl bg-repx-850 hover:bg-repx-crimson/20 text-slate-400 hover:text-repx-crimson border border-repx-border hover:border-repx-crimson/40 font-extrabold font-display text-xs md:text-sm flex items-center gap-1.5 transition-all active:scale-95"
+            className="px-3 md:px-4 py-2 rounded-xl bg-slate-100 hover:bg-rose-50 text-slate-600 hover:text-rose-600 border border-slate-200 hover:border-rose-200 font-bold text-xs md:text-sm flex items-center gap-1.5 transition-all active:scale-95"
             title="Discard this workout without saving"
           >
             <Trash2 className="w-3.5 h-3.5" />
@@ -266,7 +266,7 @@ export const WorkoutSessionPage = () => {
           <button
             onClick={handleFinish}
             disabled={isFinishing}
-            className="px-4 py-2 rounded-xl bg-repx-volt text-black font-extrabold font-display text-xs md:text-sm hover:bg-repx-voltHover transition-all shadow-volt-glow active:scale-95 disabled:opacity-50"
+            className="px-4 py-2 rounded-xl bg-blue-600 text-white font-bold text-xs md:text-sm hover:bg-blue-700 transition-all shadow-sm active:scale-95 disabled:opacity-50"
           >
             {isFinishing ? 'Saving...' : 'FINISH'}
           </button>
@@ -292,18 +292,18 @@ export const WorkoutSessionPage = () => {
             <button
               key={i}
               onClick={() => setCurrentExIdx(i)}
-              className={`px-3 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all flex items-center gap-2 border ${
+              className={`px-3 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all flex items-center gap-2 border shadow-sm ${
                 isCurrent
-                  ? 'bg-repx-volt text-black border-repx-volt shadow-volt-glow'
+                  ? 'bg-blue-600 text-white border-blue-600'
                   : isDone
-                  ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
-                  : 'bg-repx-900 text-slate-400 border-repx-border hover:text-white'
+                  ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                  : 'bg-white text-slate-600 border-slate-200 hover:text-slate-900'
               }`}
             >
               <span>{ex.exerciseName}</span>
               <span
-                className={`text-[10px] px-1.5 py-0.2 rounded font-mono font-extrabold ${
-                  isCurrent ? 'bg-black/20 text-black' : 'bg-repx-800 text-slate-300'
+                className={`text-[10px] px-1.5 py-0.5 rounded font-mono font-bold ${
+                  isCurrent ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-600'
                 }`}
               >
                 {completedCount}/{totalCount}
@@ -314,7 +314,7 @@ export const WorkoutSessionPage = () => {
 
         <button
           onClick={() => setShowAddExModal(true)}
-          className="px-3 py-2 rounded-xl bg-repx-850 hover:bg-repx-800 text-repx-volt text-xs font-bold border border-repx-border flex items-center gap-1 whitespace-nowrap"
+          className="px-3 py-2 rounded-xl bg-white hover:bg-slate-50 text-blue-600 text-xs font-bold border border-slate-200 flex items-center gap-1 whitespace-nowrap shadow-sm"
         >
           <Plus className="w-3.5 h-3.5" /> Exercise
         </button>
@@ -322,17 +322,17 @@ export const WorkoutSessionPage = () => {
 
       {/* 3. CURRENT EXERCISE CARD */}
       {currentExercise && (
-        <div className="repx-card rounded-3xl p-5 md:p-6 border border-repx-border space-y-5">
+        <div className="bg-white rounded-2xl p-5 md:p-6 border border-slate-200 space-y-5 shadow-sm">
           {/* Header info */}
-          <div className="flex items-center justify-between pb-3 border-b border-repx-border">
+          <div className="flex items-center justify-between pb-3 border-b border-slate-100">
             <div>
               <div className="text-[10px] font-black uppercase tracking-wider text-slate-400">
                 Exercise {currentExIdx + 1} of {exercises.length}
               </div>
-              <h2 className="text-2xl font-black font-display text-white tracking-tight mt-0.5">
+              <h2 className="text-2xl font-black font-display text-slate-900 tracking-tight mt-0.5">
                 {currentExercise.exerciseName}
               </h2>
-              <span className="text-xs font-extrabold text-repx-volt uppercase">
+              <span className="text-xs font-bold text-blue-600 uppercase">
                 {currentExercise.muscleGroup || 'Target Muscle'}
               </span>
             </div>
@@ -342,10 +342,10 @@ export const WorkoutSessionPage = () => {
               <button
                 type="button"
                 onClick={handleVoiceLogSet}
-                className={`px-3 py-1.5 rounded-xl border text-xs font-black font-display flex items-center gap-1.5 transition-all active:scale-95 ${
+                className={`px-3 py-1.5 rounded-xl border text-xs font-bold flex items-center gap-1.5 transition-all active:scale-95 ${
                   isVoiceLogging
-                    ? 'bg-repx-crimson text-white border-repx-crimson animate-pulse shadow-crimson-glow'
-                    : 'bg-repx-volt/15 hover:bg-repx-volt/25 text-repx-volt border-repx-volt/40 shadow-volt-glow'
+                    ? 'bg-rose-600 text-white border-rose-600 animate-pulse'
+                    : 'bg-blue-50 hover:bg-blue-100 text-blue-600 border-blue-200'
                 }`}
                 title="Log sets with your voice"
               >
@@ -355,16 +355,16 @@ export const WorkoutSessionPage = () => {
 
               <button
                 onClick={() => setShowFormTips(true)}
-                className="px-2.5 py-1.5 rounded-xl bg-repx-850 hover:bg-repx-800 text-slate-300 border border-repx-border text-xs font-bold flex items-center gap-1.5"
+                className="px-2.5 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 text-xs font-bold flex items-center gap-1.5"
                 title="Exercise Form Guide"
               >
-                <HelpCircle className="w-4 h-4 text-repx-cyan" /> Form Tips
+                <HelpCircle className="w-4 h-4 text-blue-600" /> Form Tips
               </button>
 
               {exercises.length > 1 && (
                 <button
                   onClick={() => removeExercise(currentExIdx)}
-                  className="p-1.5 rounded-xl text-slate-500 hover:text-repx-crimson"
+                  className="p-1.5 rounded-xl text-slate-400 hover:text-rose-600"
                   title="Remove Exercise"
                 >
                   <Trash2 className="w-4 h-4" />
@@ -375,12 +375,12 @@ export const WorkoutSessionPage = () => {
 
           {/* Voice Feedback Banner */}
           {voiceLogFeedback && (
-            <div className={`p-3 rounded-xl border text-xs flex items-center gap-2 font-display font-bold animate-fade-in ${
+            <div className={`p-3 rounded-xl border text-xs flex items-center gap-2 font-bold animate-fade-in ${
               voiceLogFeedback.startsWith('✓')
-                ? 'bg-repx-volt/10 border-repx-volt/40 text-repx-volt'
-                : 'bg-repx-850 border-repx-border text-slate-300'
+                ? 'bg-blue-50 border-blue-200 text-blue-700'
+                : 'bg-slate-100 border-slate-200 text-slate-700'
             }`}>
-              <Mic className="w-4 h-4 text-repx-volt shrink-0 animate-pulse" />
+              <Mic className="w-4 h-4 text-blue-600 shrink-0 animate-pulse" />
               <span>{voiceLogFeedback}</span>
             </div>
           )}
@@ -389,7 +389,7 @@ export const WorkoutSessionPage = () => {
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
               <thead>
-                <tr className="text-slate-500 uppercase tracking-wider text-[11px] border-b border-repx-border">
+                <tr className="text-slate-400 uppercase tracking-wider text-[11px] border-b border-slate-100">
                   <th className="py-2 w-10 text-center">Set</th>
                   <th className="py-2">Previous</th>
                   <th className="py-2 text-center">Weight (KG)</th>
@@ -398,22 +398,22 @@ export const WorkoutSessionPage = () => {
                   <th className="py-2 w-8"></th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-repx-border/40">
+              <tbody className="divide-y divide-slate-100">
                 {(currentExercise.sets || []).map((set, sIdx) => {
                   return (
                     <tr
                       key={sIdx}
                       className={`transition-colors ${
-                        set.isCompleted ? 'bg-repx-volt/[0.04]' : 'hover:bg-repx-850/50'
+                        set.isCompleted ? 'bg-blue-50/40' : 'hover:bg-slate-50'
                       }`}
                     >
                       {/* Set Number */}
                       <td className="py-3 text-center">
                         <span
-                          className={`w-7 h-7 mx-auto rounded-lg text-xs font-black font-display flex items-center justify-center ${
+                          className={`w-7 h-7 mx-auto rounded-lg text-xs font-bold flex items-center justify-center ${
                             set.isCompleted
-                              ? 'bg-repx-volt text-black shadow-volt-glow'
-                              : 'bg-repx-800 text-slate-300'
+                              ? 'bg-blue-600 text-white'
+                              : 'bg-slate-100 text-slate-600'
                           }`}
                         >
                           {set.setNumber}
@@ -421,7 +421,7 @@ export const WorkoutSessionPage = () => {
                       </td>
 
                       {/* Previous Performance */}
-                      <td className="py-3 text-xs text-slate-400 font-mono">
+                      <td className="py-3 text-xs text-slate-500 font-mono">
                         {set.previousWeightKg ? `${set.previousWeightKg}kg × ${set.previousReps}` : '—'}
                       </td>
 
@@ -431,7 +431,7 @@ export const WorkoutSessionPage = () => {
                           <button
                             type="button"
                             onClick={() => handleAddWeight(sIdx, -2.5)}
-                            className="w-7 h-7 rounded-lg bg-repx-850 hover:bg-repx-800 text-slate-400 hover:text-white font-bold text-xs border border-repx-border"
+                            className="w-7 h-7 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs border border-slate-200"
                           >
                             -
                           </button>
@@ -442,12 +442,12 @@ export const WorkoutSessionPage = () => {
                             onChange={(e) =>
                               updateSet(currentExIdx, sIdx, 'weightKg', Number(e.target.value))
                             }
-                            className="w-16 bg-repx-900 border border-repx-border focus:border-repx-volt rounded-lg py-1 text-center font-black font-display text-white text-sm"
+                            className="w-16 bg-slate-50 border border-slate-200 focus:border-blue-600 focus:bg-white rounded-lg py-1 text-center font-bold text-slate-900 text-sm outline-none"
                           />
                           <button
                             type="button"
                             onClick={() => handleAddWeight(sIdx, 2.5)}
-                            className="w-7 h-7 rounded-lg bg-repx-850 hover:bg-repx-800 text-slate-400 hover:text-white font-bold text-xs border border-repx-border"
+                            className="w-7 h-7 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs border border-slate-200"
                           >
                             +
                           </button>
@@ -460,7 +460,7 @@ export const WorkoutSessionPage = () => {
                           <button
                             type="button"
                             onClick={() => handleAddReps(sIdx, -1)}
-                            className="w-7 h-7 rounded-lg bg-repx-850 hover:bg-repx-800 text-slate-400 hover:text-white font-bold text-xs border border-repx-border"
+                            className="w-7 h-7 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs border border-slate-200"
                           >
                             -
                           </button>
@@ -470,12 +470,12 @@ export const WorkoutSessionPage = () => {
                             onChange={(e) =>
                               updateSet(currentExIdx, sIdx, 'reps', Number(e.target.value))
                             }
-                            className="w-14 bg-repx-900 border border-repx-border focus:border-repx-volt rounded-lg py-1 text-center font-black font-display text-white text-sm"
+                            className="w-14 bg-slate-50 border border-slate-200 focus:border-blue-600 focus:bg-white rounded-lg py-1 text-center font-bold text-slate-900 text-sm outline-none"
                           />
                           <button
                             type="button"
                             onClick={() => handleAddReps(sIdx, 1)}
-                            className="w-7 h-7 rounded-lg bg-repx-850 hover:bg-repx-800 text-slate-400 hover:text-white font-bold text-xs border border-repx-border"
+                            className="w-7 h-7 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs border border-slate-200"
                           >
                             +
                           </button>
@@ -489,8 +489,8 @@ export const WorkoutSessionPage = () => {
                           onClick={() => toggleSetComplete(currentExIdx, sIdx)}
                           className={`w-9 h-9 rounded-xl flex items-center justify-center transition-all active:scale-90 border ${
                             set.isCompleted
-                              ? 'bg-emerald-500 text-black border-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.4)]'
-                              : 'bg-repx-850 text-slate-500 border-repx-border hover:border-slate-500'
+                              ? 'bg-emerald-500 text-white border-emerald-500 shadow-sm'
+                              : 'bg-slate-100 text-slate-400 border-slate-200 hover:border-slate-400'
                           }`}
                           title="Complete Set"
                         >
@@ -504,7 +504,7 @@ export const WorkoutSessionPage = () => {
                           <button
                             type="button"
                             onClick={() => removeSet(currentExIdx, sIdx)}
-                            className="text-slate-600 hover:text-repx-crimson p-1"
+                            className="text-slate-400 hover:text-rose-600 p-1"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
                           </button>
@@ -522,9 +522,9 @@ export const WorkoutSessionPage = () => {
             <button
               type="button"
               onClick={() => addSet(currentExIdx)}
-              className="w-full py-3 rounded-2xl bg-repx-850 hover:bg-repx-800 border border-repx-border text-slate-200 text-xs font-bold font-display flex items-center justify-center gap-2 transition-all active:scale-95"
+              className="w-full py-3 rounded-xl bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 text-xs font-bold flex items-center justify-center gap-2 transition-all active:scale-95"
             >
-              <Plus className="w-4 h-4 text-repx-volt" /> + ADD SET
+              <Plus className="w-4 h-4 text-blue-600" /> + ADD SET
             </button>
           </div>
         </div>
@@ -538,14 +538,14 @@ export const WorkoutSessionPage = () => {
         <button
           onClick={handlePrevExercise}
           disabled={currentExIdx === 0}
-          className="py-3.5 px-5 rounded-2xl bg-repx-850 hover:bg-repx-800 text-slate-200 text-xs font-extrabold font-display border border-repx-border flex items-center gap-2 disabled:opacity-30 transition-all"
+          className="py-3.5 px-5 rounded-xl bg-white hover:bg-slate-50 text-slate-700 text-xs font-bold border border-slate-200 flex items-center gap-2 disabled:opacity-30 transition-all shadow-sm"
         >
           <ChevronLeft className="w-4 h-4" /> PREVIOUS
         </button>
 
         <button
           onClick={() => setShowDiscardModal(true)}
-          className="text-xs font-bold text-slate-500 hover:text-repx-crimson transition-colors flex items-center gap-1.5 py-2 px-3 rounded-lg hover:bg-repx-crimson/10"
+          className="text-xs font-bold text-slate-500 hover:text-rose-600 transition-colors flex items-center gap-1.5 py-2 px-3 rounded-lg hover:bg-rose-50"
         >
           <Trash2 className="w-3.5 h-3.5" /> Discard Session
         </button>
@@ -553,7 +553,7 @@ export const WorkoutSessionPage = () => {
         {currentExIdx < exercises.length - 1 ? (
           <button
             onClick={handleNextExercise}
-            className="py-3.5 px-6 rounded-2xl bg-repx-volt text-black text-xs font-black font-display flex items-center gap-2 shadow-volt-glow hover:bg-repx-voltHover transition-all active:scale-95"
+            className="py-3.5 px-6 rounded-xl bg-blue-600 text-white text-xs font-bold flex items-center gap-2 shadow-sm hover:bg-blue-700 transition-all active:scale-95"
           >
             NEXT EXERCISE <ChevronRight className="w-4 h-4" />
           </button>
@@ -561,22 +561,22 @@ export const WorkoutSessionPage = () => {
           <button
             onClick={handleFinish}
             disabled={isFinishing}
-            className="py-3.5 px-6 rounded-2xl bg-gradient-to-r from-repx-volt to-emerald-400 text-black text-xs font-black font-display flex items-center gap-2 shadow-volt-glow hover:opacity-95 transition-all active:scale-95"
+            className="py-3.5 px-6 rounded-xl bg-emerald-600 text-white text-xs font-bold flex items-center gap-2 shadow-sm hover:bg-emerald-700 transition-all active:scale-95"
           >
-            FINISH WORKOUT <Award className="w-4 h-4 fill-black" />
+            FINISH WORKOUT <Award className="w-4 h-4 fill-white" />
           </button>
         )}
       </div>
 
       {/* MODAL: ADD EXERCISE TO ACTIVE WORKOUT */}
       {showAddExModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in">
-          <div className="repx-card w-full max-w-lg max-h-[80vh] rounded-3xl p-6 border border-repx-border flex flex-col shadow-2xl">
-            <div className="flex items-center justify-between pb-3 border-b border-repx-border">
-              <h3 className="text-base font-black font-display text-white">Add Movement</h3>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-fade-in">
+          <div className="bg-white w-full max-w-lg max-h-[80vh] rounded-2xl p-6 border border-slate-200 flex flex-col shadow-xl">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+              <h3 className="text-base font-bold text-slate-900">Add Movement</h3>
               <button
                 onClick={() => setShowAddExModal(false)}
-                className="text-slate-400 hover:text-white"
+                className="text-slate-400 hover:text-slate-700 p-1"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -588,7 +588,7 @@ export const WorkoutSessionPage = () => {
                 value={exerciseSearch}
                 onChange={(e) => setExerciseSearch(e.target.value)}
                 placeholder="Search exercise..."
-                className="w-full bg-repx-900 border border-repx-border rounded-xl px-4 py-2 text-xs text-white focus:outline-none focus:border-repx-volt"
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-xs text-slate-900 focus:outline-none focus:border-blue-600 focus:bg-white"
               />
             </div>
 
@@ -603,13 +603,13 @@ export const WorkoutSessionPage = () => {
                       setShowAddExModal(false);
                       setCurrentExIdx(exercises.length);
                     }}
-                    className="p-3 rounded-xl bg-repx-850 hover:bg-repx-800 border border-repx-border cursor-pointer flex items-center justify-between"
+                    className="p-3 rounded-xl bg-slate-50 hover:bg-blue-50/50 border border-slate-200 cursor-pointer flex items-center justify-between transition-colors"
                   >
                     <div>
-                      <div className="text-xs font-bold text-white">{ex.name}</div>
-                      <div className="text-[10px] text-slate-400">{ex.muscleGroup}</div>
+                      <div className="text-xs font-bold text-slate-900">{ex.name}</div>
+                      <div className="text-[10px] text-slate-500">{ex.muscleGroup}</div>
                     </div>
-                    <Plus className="w-4 h-4 text-repx-volt" />
+                    <Plus className="w-4 h-4 text-blue-600" />
                   </div>
                 ))}
             </div>
@@ -619,30 +619,30 @@ export const WorkoutSessionPage = () => {
 
       {/* MODAL: EXERCISE FORM GUIDE */}
       {showFormTips && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in">
-          <div className="repx-card w-full max-w-md max-h-[85vh] rounded-3xl p-6 border border-repx-border overflow-y-auto shadow-2xl">
-            <div className="flex items-center justify-between pb-3 border-b border-repx-border mb-4">
-              <h3 className="text-base font-black font-display text-white">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-fade-in">
+          <div className="bg-white w-full max-w-md max-h-[85vh] rounded-2xl p-6 border border-slate-200 overflow-y-auto shadow-xl">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
+              <h3 className="text-base font-bold text-slate-900">
                 {currentExercise.exerciseName} - Form Guide
               </h3>
               <button
                 onClick={() => setShowFormTips(false)}
-                className="text-slate-400 hover:text-white"
+                className="text-slate-400 hover:text-slate-700 p-1"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <div className="space-y-4 text-xs text-slate-300">
+            <div className="space-y-4 text-xs text-slate-600">
               <div>
-                <h4 className="font-bold text-repx-volt uppercase tracking-wider mb-2">
+                <h4 className="font-bold text-blue-600 uppercase tracking-wider mb-2">
                   Target Muscles
                 </h4>
                 <div className="flex flex-wrap gap-1.5">
                   {(fullExerciseInfo?.targetMuscles || [currentExercise.muscleGroup]).map((m, i) => (
                     <span
                       key={i}
-                      className="px-2.5 py-1 rounded-lg bg-repx-800 text-[11px] font-medium text-slate-200"
+                      className="px-2.5 py-1 rounded-lg bg-slate-100 text-[11px] font-medium text-slate-700"
                     >
                       {m}
                     </span>
@@ -651,10 +651,10 @@ export const WorkoutSessionPage = () => {
               </div>
 
               <div>
-                <h4 className="font-bold text-repx-volt uppercase tracking-wider mb-2">
+                <h4 className="font-bold text-blue-600 uppercase tracking-wider mb-2">
                   Execution Steps
                 </h4>
-                <ol className="space-y-1.5 list-decimal list-inside text-slate-300 leading-relaxed">
+                <ol className="space-y-1.5 list-decimal list-inside text-slate-700 leading-relaxed">
                   {(
                     fullExerciseInfo?.instructions || [
                       'Control the eccentric phase for 2 seconds.',
@@ -668,10 +668,10 @@ export const WorkoutSessionPage = () => {
               </div>
 
               <div>
-                <h4 className="font-bold text-repx-crimson uppercase tracking-wider mb-2">
+                <h4 className="font-bold text-rose-600 uppercase tracking-wider mb-2">
                   Common Mistakes
                 </h4>
-                <ul className="space-y-1 list-disc list-inside text-slate-400">
+                <ul className="space-y-1 list-disc list-inside text-slate-500">
                   {(
                     fullExerciseInfo?.commonMistakes || [
                       'Using excessive momentum',
@@ -686,7 +686,7 @@ export const WorkoutSessionPage = () => {
 
             <button
               onClick={() => setShowFormTips(false)}
-              className="mt-6 w-full py-2.5 rounded-xl bg-repx-800 hover:bg-repx-750 text-xs font-bold text-white"
+              className="mt-6 w-full py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-xs font-bold text-white transition-colors"
             >
               Got It, Back to Lifting
             </button>
@@ -696,24 +696,24 @@ export const WorkoutSessionPage = () => {
 
       {/* MODAL: DISCARD WORKOUT CONFIRMATION */}
       {showDiscardModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fade-in">
-          <div className="repx-card w-full max-w-md rounded-3xl p-6 border border-repx-crimson/40 shadow-2xl space-y-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-fade-in">
+          <div className="bg-white w-full max-w-md rounded-2xl p-6 border border-slate-200 shadow-xl space-y-4">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-2xl bg-repx-crimson/20 border border-repx-crimson/40 flex items-center justify-center text-repx-crimson shrink-0">
+              <div className="w-12 h-12 rounded-2xl bg-rose-50 border border-rose-100 flex items-center justify-center text-rose-600 shrink-0">
                 <Trash2 className="w-6 h-6" />
               </div>
               <div>
-                <h3 className="text-lg font-black font-display text-white">
+                <h3 className="text-lg font-bold text-slate-900">
                   Discard Active Workout?
                 </h3>
-                <p className="text-xs text-slate-400 mt-0.5">
+                <p className="text-xs text-slate-500 mt-0.5">
                   This will clear all logged sets, reps, and elapsed time.
                 </p>
               </div>
             </div>
 
-            <p className="text-xs text-slate-300 leading-relaxed bg-repx-900/60 p-3.5 rounded-xl border border-repx-border">
-              Are you sure you want to discard <strong className="text-white">"{activeSession?.workoutName || 'this workout'}"</strong>? 
+            <p className="text-xs text-slate-600 leading-relaxed bg-slate-50 p-3.5 rounded-xl border border-slate-100">
+              Are you sure you want to discard <strong className="text-slate-900">"{activeSession?.workoutName || 'this workout'}"</strong>? 
               This session will not be saved to your workout history or analytics.
             </p>
 
@@ -721,14 +721,14 @@ export const WorkoutSessionPage = () => {
               <button
                 type="button"
                 onClick={() => setShowDiscardModal(false)}
-                className="px-5 py-2.5 rounded-xl bg-repx-850 hover:bg-repx-800 text-xs font-bold text-slate-300 transition-colors"
+                className="px-5 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-xs font-bold text-slate-700 transition-colors"
               >
                 Keep Lifting
               </button>
               <button
                 type="button"
                 onClick={handleConfirmDiscard}
-                className="px-5 py-2.5 rounded-xl bg-repx-crimson hover:bg-rose-600 text-white font-black font-display text-xs shadow-crimson-glow transition-all active:scale-95"
+                className="px-5 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs shadow-sm transition-all active:scale-95"
               >
                 Yes, Discard Workout
               </button>

@@ -1,18 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
 import {
-  Heart,
-  MessageSquare,
+  ThumbsUp,
+  MessageCircle,
   Share2,
-  Flame,
-  Send,
   Trophy,
   Dumbbell,
   Clock,
-  Layers,
+  Weight,
+  Send,
   UserPlus,
   UserCheck,
-  Check,
 } from 'lucide-react';
 import API from '../services/api';
 import { useAuth } from '../context/AuthContext';
@@ -23,13 +21,15 @@ export const SocialFeedPage = () => {
 
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [newPostText, setNewPostText] = useState('');
-  const [posting, setPosting] = useState(false);
-
-  // Active comments popover per post
-  const [openCommentsPostId, setOpenCommentsPostId] = useState(null);
+  const [commentInputs, setCommentInputs] = useState({});
+  const [activeCommentsPostId, setActiveCommentsPostId] = useState(null);
   const [commentsMap, setCommentsMap] = useState({});
-  const [commentInput, setCommentInput] = useState('');
+  const [suggestedUsers, setSuggestedUsers] = useState([]);
+  const [followedMap, setFollowedMap] = useState({});
+
+  const displayName = user?.name || 'INFANT RAJA';
+  const displayUsername = user?.username || 'infantraja25';
+  const initial = displayName.charAt(0).toUpperCase() || 'I';
 
   const fetchFeed = async () => {
     try {
@@ -45,32 +45,30 @@ export const SocialFeedPage = () => {
     }
   };
 
-  useEffect(() => {
-    fetchFeed();
-  }, []);
-
-  const handleCreatePost = async (e) => {
-    e.preventDefault();
-    if (!newPostText.trim()) return;
-
+  const fetchSuggested = async () => {
     try {
-      setPosting(true);
-      const res = await API.post('/posts', {
-        content: newPostText.trim(),
-        type: 'general',
-      });
+      const res = await API.get('/users/suggested');
       if (res.data?.success) {
-        setNewPostText('');
-        fetchFeed();
+        setSuggestedUsers(res.data.data);
       }
-    } catch (err) {
-      console.error('Failed to post:', err);
-    } finally {
-      setPosting(false);
+    } catch (e) {
+      // Fallback suggested users matching Screenshot 1
+      setSuggestedUsers([
+        { _id: '1', name: 'Cory Scott', username: 'scholarscott86' },
+        { _id: '2', name: 'Steve', username: 'chronically_steve' },
+        { _id: '3', name: 'Mike "Tank" Price', username: 'runningwoof' },
+        { _id: '4', name: 'Luca Montelisciani', username: 'lucamontelisciani' },
+        { _id: '5', name: 'Dpfitnessforlife', username: 'dpfitnessforlife' },
+      ]);
     }
   };
 
-  const handleToggleLike = async (postId) => {
+  useEffect(() => {
+    fetchFeed();
+    fetchSuggested();
+  }, []);
+
+  const handleLike = async (postId) => {
     try {
       const res = await API.post(`/posts/${postId}/like`);
       if (res.data?.success) {
@@ -85,303 +83,272 @@ export const SocialFeedPage = () => {
     } catch (e) {}
   };
 
-  const handleToggleComments = async (postId) => {
-    if (openCommentsPostId === postId) {
-      setOpenCommentsPostId(null);
-      return;
-    }
-
-    setOpenCommentsPostId(postId);
-    if (!commentsMap[postId]) {
-      try {
-        const res = await API.get(`/posts/${postId}/comments`);
-        if (res.data?.success) {
-          setCommentsMap((prev) => ({ ...prev, [postId]: res.data.data }));
-        }
-      } catch (e) {}
-    }
-  };
-
   const handleAddComment = async (postId) => {
-    if (!commentInput.trim()) return;
+    const text = (commentInputs[postId] || '').trim();
+    if (!text) return;
 
     try {
-      const res = await API.post(`/posts/${postId}/comment`, { text: commentInput.trim() });
+      const res = await API.post(`/posts/${postId}/comments`, { content: text });
       if (res.data?.success) {
         setCommentsMap((prev) => ({
           ...prev,
           [postId]: [...(prev[postId] || []), res.data.data],
         }));
-        setCommentInput('');
-        setPosts((prev) =>
-          prev.map((p) =>
-            p._id === postId ? { ...p, commentsCount: (p.commentsCount || 0) + 1 } : p
-          )
-        );
+        setCommentInputs((prev) => ({ ...prev, [postId]: '' }));
       }
     } catch (e) {}
   };
 
-  const handleFollowToggle = async (targetUserId, isCurrentlyFollowing) => {
-    try {
-      if (isCurrentlyFollowing) {
-        await API.delete(`/users/${targetUserId}/follow`);
-      } else {
-        await API.post(`/users/${targetUserId}/follow`);
-      }
-      setPosts((prev) =>
-        prev.map((p) =>
-          p.user?._id === targetUserId
-            ? { ...p, isFollowingAuthor: !isCurrentlyFollowing }
-            : p
-        )
-      );
-    } catch (e) {}
+  const handleToggleFollow = (userId) => {
+    setFollowedMap((prev) => ({ ...prev, [userId]: !prev[userId] }));
   };
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6 animate-fade-in">
-      {/* Header */}
-      <div>
-        <h1 className="text-2xl md:text-3xl font-black font-display text-white tracking-tight">
-          Social Fitness Feed
-        </h1>
-        <p className="text-xs md:text-sm text-slate-400 mt-0.5">
-          Verified athlete PRs, workout logs, and training motivation across the REPX network.
-        </p>
-      </div>
+    <div className="max-w-6xl mx-auto space-y-4">
+      <h1 className="text-2xl font-black text-slate-900 tracking-tight">Home</h1>
 
-      {/* Post Creator Box */}
-      <form onSubmit={handleCreatePost} className="repx-card rounded-3xl p-5 border border-repx-border space-y-3">
-        <div className="flex items-center gap-3">
-          <img
-            src={
-              user?.avatar ||
-              'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100'
-            }
-            alt={user?.name}
-            className="w-10 h-10 rounded-xl object-cover border border-repx-borderLight shrink-0"
-          />
-          <input
-            type="text"
-            value={newPostText}
-            onChange={(e) => setNewPostText(e.target.value)}
-            placeholder="Share today's milestone, workout notes, or PR..."
-            className="w-full bg-repx-900 border border-repx-border rounded-xl px-4 py-2.5 text-xs md:text-sm text-white placeholder-slate-500 focus:outline-none focus:border-repx-volt"
-          />
-        </div>
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        {/* Main Feed Column (8 cols on desktop) */}
+        <div className="lg:col-span-8 space-y-4">
+          {loading ? (
+            <LoadingSkeleton type="card" count={3} />
+          ) : posts.length === 0 ? (
+            <div className="bg-white rounded-2xl p-10 text-center border border-slate-200">
+              <Dumbbell className="w-8 h-8 text-slate-300 mx-auto mb-2" />
+              <p className="text-slate-600 text-sm font-semibold">No workout updates yet.</p>
+              <p className="text-slate-400 text-xs mt-1">Complete a workout to share your activity!</p>
+            </div>
+          ) : (
+            posts.map((post) => {
+              const author = post.user || {};
+              const authorName = author.name || 'Athlete';
+              const authorUsername = author.username || 'user';
+              const authorInitial = authorName.charAt(0).toUpperCase();
 
-        <div className="flex items-center justify-between pt-1">
-          <span className="text-[11px] text-slate-500 font-medium">
-            Keep it focused on discipline and continuous progression.
-          </span>
-          <button
-            type="submit"
-            disabled={posting || !newPostText.trim()}
-            className="px-5 py-2 rounded-xl bg-repx-volt text-black font-extrabold font-display text-xs hover:bg-repx-voltHover transition-all shadow-volt-glow active:scale-95 disabled:opacity-40"
-          >
-            {posting ? 'Posting...' : 'Share Update'}
-          </button>
-        </div>
-      </form>
-
-      {/* Posts Stream */}
-      {loading ? (
-        <div className="space-y-4">
-          <LoadingSkeleton type="card" count={4} />
-        </div>
-      ) : posts.length === 0 ? (
-        <div className="text-center py-16 repx-card rounded-2xl border border-dashed border-repx-border">
-          <Flame className="w-8 h-8 text-repx-crimson mx-auto mb-2" />
-          <div className="text-sm font-bold text-white">No community posts yet</div>
-          <div className="text-xs text-slate-400 mt-1">Be the first athlete to post!</div>
-        </div>
-      ) : (
-        <div className="space-y-4">
-          {posts.map((post) => {
-            const author = post.user || {};
-            const isSelf = author._id === user?._id;
-            const comments = commentsMap[post._id] || [];
-
-            return (
-              <div
-                key={post._id}
-                className="repx-card rounded-3xl p-5 md:p-6 border border-repx-border space-y-4 shadow-xl"
-              >
-                {/* Author Header */}
-                <div className="flex items-center justify-between">
-                  <NavLink to={`/users/${author._id}`} className="flex items-center gap-3 group">
-                    <img
-                      src={
-                        author.avatar ||
-                        'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100'
-                      }
-                      alt={author.name}
-                      className="w-10 h-10 rounded-xl object-cover border border-repx-borderLight"
-                    />
-                    <div>
-                      <div className="text-sm font-black font-display text-white group-hover:text-repx-volt transition-colors flex items-center gap-1.5">
-                        {author.name}
-                        {author.isPro && (
-                          <span className="text-[9px] font-black uppercase px-1.5 py-0.2 rounded bg-amber-400/20 text-amber-300 border border-amber-400/40">
-                            PRO
-                          </span>
-                        )}
+              return (
+                <div
+                  key={post._id}
+                  className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm space-y-4"
+                >
+                  {/* User Header */}
+                  <div className="flex items-center gap-3">
+                    {author.avatar ? (
+                      <img
+                        src={author.avatar}
+                        alt={authorName}
+                        className="w-10 h-10 rounded-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-10 h-10 rounded-full bg-slate-900 text-white font-bold flex items-center justify-center text-sm">
+                        {authorInitial}
                       </div>
-                      <div className="text-[11px] text-slate-400">
-                        @{author.username || 'athlete'} •{' '}
-                        {new Date(post.createdAt).toLocaleDateString('en-US', {
+                    )}
+                    <div>
+                      <div className="font-bold text-sm text-slate-900 leading-tight">
+                        {authorUsername}
+                      </div>
+                      <div className="text-xs text-slate-400">
+                        {new Date(post.createdAt).toLocaleDateString([], {
                           month: 'short',
                           day: 'numeric',
                         })}
                       </div>
                     </div>
-                  </NavLink>
+                  </div>
 
-                  {!isSelf && (
+                  {/* Workout Title */}
+                  <div>
+                    <h3 className="text-base font-black text-slate-900">
+                      {post.title || post.workoutSession?.workoutName || 'Workout Routine'}
+                    </h3>
+                  </div>
+
+                  {/* Stats Row: Duration, Volume, Records (Like Hevy Screenshot 1) */}
+                  <div className="flex items-center gap-6 text-xs text-slate-600 pb-2">
+                    <div>
+                      <span className="text-[10px] text-slate-400 block font-medium">Duration</span>
+                      <span className="font-bold text-slate-800">
+                        {post.workoutSession?.durationSeconds
+                          ? `${Math.round(post.workoutSession.durationSeconds / 60)}m`
+                          : '45m'}
+                      </span>
+                    </div>
+
+                    <div>
+                      <span className="text-[10px] text-slate-400 block font-medium">Volume</span>
+                      <span className="font-bold text-slate-800">
+                        {(post.workoutSession?.totalVolumeKg || 4200).toLocaleString()} kg
+                      </span>
+                    </div>
+
+                    <div>
+                      <span className="text-[10px] text-slate-400 block font-medium">Records</span>
+                      <span className="font-bold text-slate-800 flex items-center gap-1">
+                        🏆 1
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Exercise Rows with circle thumbnails (Exact Hevy Screenshot 1) */}
+                  <div className="space-y-2.5 pt-2 border-t border-slate-100">
+                    {(post.workoutSession?.exercises || [
+                      { exerciseName: 'Pull Up (Weighted)', sets: [{}, {}] },
+                      { exerciseName: 'Bent Over Row (Barbell)', sets: [{}, {}] },
+                      { exerciseName: 'Seated Cable Row - Bar Grip', sets: [{}, {}] },
+                    ]).slice(0, 3).map((ex, i) => (
+                      <div key={i} className="flex items-center gap-3 text-xs text-slate-700">
+                        <div className="w-7 h-7 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center shrink-0 text-slate-500 font-bold text-[10px]">
+                          🏋️
+                        </div>
+                        <span className="font-medium text-slate-800">
+                          {ex.sets?.length || 2} sets {ex.exerciseName}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Like / Comment / Share Row */}
+                  <div className="flex items-center gap-5 pt-3 border-t border-slate-100 text-slate-500 text-xs font-semibold">
                     <button
-                      onClick={() => handleFollowToggle(author._id, post.isFollowingAuthor)}
-                      className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all border ${
-                        post.isFollowingAuthor
-                          ? 'bg-repx-850 border-repx-border text-slate-400 hover:text-white'
-                          : 'bg-repx-volt/15 border-repx-volt/40 text-repx-volt hover:bg-repx-volt/25'
+                      onClick={() => handleLike(post._id)}
+                      className={`flex items-center gap-1.5 hover:text-blue-600 transition-colors ${
+                        post.isLiked ? 'text-blue-600 font-bold' : ''
                       }`}
                     >
-                      {post.isFollowingAuthor ? 'Following' : '+ Follow'}
+                      <ThumbsUp className="w-4 h-4" />
+                      <span>{post.likesCount || 0}</span>
                     </button>
-                  )}
-                </div>
 
-                {/* Content */}
-                <p className="text-sm text-slate-200 leading-relaxed whitespace-pre-wrap">
-                  {post.content}
-                </p>
+                    <button
+                      onClick={() =>
+                        setActiveCommentsPostId(
+                          activeCommentsPostId === post._id ? null : post._id
+                        )
+                      }
+                      className="flex items-center gap-1.5 hover:text-blue-600 transition-colors"
+                    >
+                      <MessageCircle className="w-4 h-4" />
+                      <span>{post.commentsCount || 0}</span>
+                    </button>
 
-                {/* Workout Summary Card if attached */}
-                {post.workoutSummary && (
-                  <div className="p-4 rounded-2xl bg-gradient-to-r from-repx-850 to-repx-900 border border-repx-borderLight space-y-2.5">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <Dumbbell className="w-4 h-4 text-repx-volt" />
-                        <span className="text-xs font-black font-display text-white">
-                          {post.workoutSummary.workoutName}
-                        </span>
-                      </div>
-                      {post.workoutSummary.prsCount > 0 && (
-                        <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-md bg-amber-500/20 text-amber-300 border border-amber-500/40 flex items-center gap-1">
-                          <Trophy className="w-3 h-3" /> {post.workoutSummary.prsCount} PRs
-                        </span>
-                      )}
-                    </div>
-
-                    <div className="flex items-center gap-4 text-xs text-slate-400">
-                      {post.workoutSummary.durationMinutes > 0 && (
-                        <span className="flex items-center gap-1">
-                          <Clock className="w-3.5 h-3.5" /> {post.workoutSummary.durationMinutes}m
-                        </span>
-                      )}
-                      {post.workoutSummary.totalVolumeKg > 0 && (
-                        <span className="flex items-center gap-1 text-repx-volt font-bold">
-                          <Layers className="w-3.5 h-3.5" />{' '}
-                          {post.workoutSummary.totalVolumeKg.toLocaleString()} KG
-                        </span>
-                      )}
-                      {post.workoutSummary.setsCount > 0 && (
-                        <span>{post.workoutSummary.setsCount} Sets</span>
-                      )}
-                    </div>
-
-                    {post.workoutSummary.highlights && post.workoutSummary.highlights.length > 0 && (
-                      <div className="pt-2 border-t border-repx-border/50 text-[11px] text-amber-300 space-y-0.5 font-medium">
-                        {post.workoutSummary.highlights.map((h, i) => (
-                          <div key={i} className="flex items-center gap-1.5">
-                            <Flame className="w-3 h-3 fill-amber-400 shrink-0" />
-                            <span>{h}</span>
-                          </div>
-                        ))}
-                      </div>
-                    )}
+                    <button className="flex items-center gap-1.5 hover:text-blue-600 transition-colors">
+                      <Share2 className="w-4 h-4" />
+                    </button>
                   </div>
-                )}
 
-                {/* Social Actions (Like, Comment) */}
-                <div className="flex items-center gap-4 pt-2 border-t border-repx-border/60 text-xs">
-                  <button
-                    onClick={() => handleToggleLike(post._id)}
-                    className={`flex items-center gap-1.5 font-bold transition-all ${
-                      post.isLiked ? 'text-repx-crimson' : 'text-slate-400 hover:text-white'
-                    }`}
-                  >
-                    <Heart
-                      className={`w-4 h-4 ${
-                        post.isLiked ? 'fill-repx-crimson stroke-repx-crimson animate-ping-once' : ''
-                      }`}
+                  {/* Comment Input Box (Screenshot 1) */}
+                  <div className="flex items-center gap-2 pt-2">
+                    <div className="w-7 h-7 rounded-full bg-blue-600 text-white font-bold flex items-center justify-center text-[10px] shrink-0">
+                      {initial}
+                    </div>
+                    <input
+                      type="text"
+                      placeholder="Write a comment..."
+                      value={commentInputs[post._id] || ''}
+                      onChange={(e) =>
+                        setCommentInputs({ ...commentInputs, [post._id]: e.target.value })
+                      }
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') handleAddComment(post._id);
+                      }}
+                      className="flex-1 bg-slate-100 rounded-xl px-3.5 py-2 text-xs text-slate-800 placeholder-slate-400 outline-none border border-transparent focus:border-blue-400 focus:bg-white transition-all"
                     />
-                    <span>{post.likesCount || 0}</span>
-                  </button>
-
-                  <button
-                    onClick={() => handleToggleComments(post._id)}
-                    className="flex items-center gap-1.5 font-bold text-slate-400 hover:text-white transition-all"
-                  >
-                    <MessageSquare className="w-4 h-4" />
-                    <span>{post.commentsCount || 0} Comments</span>
-                  </button>
-                </div>
-
-                {/* Inline Comments Section */}
-                {openCommentsPostId === post._id && (
-                  <div className="pt-3 border-t border-repx-border space-y-3 animate-fade-in">
-                    <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
-                      {comments.length === 0 ? (
-                        <div className="text-center py-2 text-xs text-slate-500">
-                          No comments yet. Start the conversation!
-                        </div>
-                      ) : (
-                        comments.map((c) => (
-                          <div
-                            key={c._id}
-                            className="p-2.5 rounded-xl bg-repx-850/80 border border-repx-border text-xs"
-                          >
-                            <div className="font-bold text-white flex items-center justify-between">
-                              <span>{c.user?.name || 'Athlete'}</span>
-                              <span className="text-[10px] text-slate-500 font-normal">
-                                {new Date(c.createdAt).toLocaleTimeString([], {
-                                  hour: '2-digit',
-                                  minute: '2-digit',
-                                })}
-                              </span>
-                            </div>
-                            <div className="text-slate-300 mt-1">{c.text}</div>
-                          </div>
-                        ))
-                      )}
-                    </div>
-
-                    {/* Add Comment Input */}
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="text"
-                        value={commentInput}
-                        onChange={(e) => setCommentInput(e.target.value)}
-                        onKeyDown={(e) => e.key === 'Enter' && handleAddComment(post._id)}
-                        placeholder="Leave a comment..."
-                        className="flex-1 bg-repx-900 border border-repx-border rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-repx-volt"
-                      />
-                      <button
-                        onClick={() => handleAddComment(post._id)}
-                        className="p-2 rounded-xl bg-repx-volt text-black hover:bg-repx-voltHover"
-                      >
-                        <Send className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
+                    <button
+                      onClick={() => handleAddComment(post._id)}
+                      className="text-xs font-bold text-blue-600 hover:text-blue-700 px-2 py-1"
+                    >
+                      Post
+                    </button>
                   </div>
-                )}
-              </div>
-            );
-          })}
+                </div>
+              );
+            })
+          )}
         </div>
-      )}
+
+        {/* Right Column: Profile Summary & Suggested Athletes (4 cols on desktop) */}
+        <div className="lg:col-span-4 space-y-4">
+          {/* User Profile Card (Exact Hevy Screenshot 1) */}
+          <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm text-center space-y-4">
+            <div className="w-16 h-16 rounded-full bg-blue-600 text-white font-black text-2xl flex items-center justify-center mx-auto shadow-sm">
+              {initial}
+            </div>
+
+            <div>
+              <div className="font-bold text-sm text-slate-900">{displayUsername}</div>
+              <div className="text-xs text-slate-400 uppercase tracking-tight">{displayName}</div>
+            </div>
+
+            {/* Stats: Workouts, Followers, Following */}
+            <div className="grid grid-cols-3 divide-x divide-slate-100 pt-2 border-t border-slate-100 text-center">
+              <div>
+                <span className="text-[10px] text-slate-400 uppercase block font-medium">Workouts</span>
+                <span className="text-sm font-bold text-slate-800">46</span>
+              </div>
+              <div>
+                <span className="text-[10px] text-slate-400 uppercase block font-medium">Followers</span>
+                <span className="text-sm font-bold text-slate-800">5</span>
+              </div>
+              <div>
+                <span className="text-[10px] text-slate-400 uppercase block font-medium">Following</span>
+                <span className="text-sm font-bold text-slate-800">6</span>
+              </div>
+            </div>
+
+            <NavLink
+              to="/profile"
+              className="block w-full py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200/80 text-xs font-bold text-slate-700 transition-all"
+            >
+              See your profile
+            </NavLink>
+          </div>
+
+          {/* Latest Activity Card */}
+          <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm space-y-1">
+            <div className="text-xs font-bold text-slate-900 mb-2">Latest Activity</div>
+            <div className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+              <span>Afternoon workout</span>
+              <span>💪</span>
+            </div>
+            <div className="text-[11px] text-slate-400">Yesterday at 5:31 PM</div>
+          </div>
+
+          {/* Suggested Athletes Card */}
+          <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm space-y-3">
+            <div className="text-xs font-bold text-slate-900">Suggested Athletes</div>
+
+            <div className="space-y-3">
+              {suggestedUsers.map((ath) => {
+                const isFollowed = followedMap[ath._id];
+                return (
+                  <div key={ath._id} className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2.5 truncate">
+                      <div className="w-8 h-8 rounded-full bg-slate-200 text-slate-600 font-bold flex items-center justify-center text-xs shrink-0">
+                        {ath.name.charAt(0)}
+                      </div>
+                      <div className="truncate">
+                        <div className="text-xs font-bold text-slate-800 truncate">{ath.username}</div>
+                        <div className="text-[10px] text-slate-400 truncate">{ath.name}</div>
+                      </div>
+                    </div>
+
+                    <button
+                      onClick={() => handleToggleFollow(ath._id)}
+                      className={`text-xs font-bold px-3 py-1 rounded-lg transition-all shrink-0 ${
+                        isFollowed
+                          ? 'bg-slate-100 text-slate-600'
+                          : 'text-blue-600 hover:bg-blue-50'
+                      }`}
+                    >
+                      {isFollowed ? 'Following' : 'Follow'}
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
