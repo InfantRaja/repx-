@@ -2,6 +2,9 @@ import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { WorkoutProvider } from './context/WorkoutContext';
+import { ThemeProvider } from './context/ThemeContext';
+import { LanguageProvider } from './context/LanguageContext';
+import { UnitProvider } from './context/UnitContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import AppLayout from './layouts/AppLayout';
 import AuthLayout from './layouts/AuthLayout';
@@ -32,9 +35,12 @@ import AICoachPage from './pages/AICoachPage';
 
 export function App() {
   return (
-    <AuthProvider>
-      <WorkoutProvider>
-        <Routes>
+    <ThemeProvider>
+      <LanguageProvider>
+        <AuthProvider>
+          <UnitProvider>
+            <WorkoutProvider>
+              <Routes>
           {/* Public Auth Routes */}
           <Route element={<AuthLayout />}>
             <Route path="/login" element={<LoginPage />} />
@@ -86,7 +92,10 @@ export function App() {
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>
       </WorkoutProvider>
-    </AuthProvider>
+          </UnitProvider>
+        </AuthProvider>
+      </LanguageProvider>
+    </ThemeProvider>
   );
 }
 

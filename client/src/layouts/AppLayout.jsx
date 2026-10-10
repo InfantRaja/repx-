@@ -37,7 +37,7 @@ export const AppLayout = () => {
   const isWorkoutSession = location.pathname.includes('/workout/session');
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 flex">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex transition-colors">
       {/* Desktop Sidebar */}
       <Sidebar />
 

@@ -91,6 +91,26 @@ export const WorkoutsPage = () => {
         <h1 className="text-2xl font-black text-slate-900 tracking-tight">Routines</h1>
       </div>
 
+      {/* Top Banner: Quick Access to Weekly Splits */}
+      <div 
+        onClick={() => navigate('/splits')}
+        className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl p-4 md:p-5 text-white shadow-sm flex items-center justify-between cursor-pointer hover:opacity-95 transition-all active:scale-[0.99]"
+      >
+        <div className="flex items-center gap-3.5">
+          <div className="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center shrink-0">
+            <Calendar className="w-5 h-5 text-white" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="font-bold text-sm md:text-base">10 Science-Backed Weekly Splits</span>
+              <span className="bg-white/20 text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider">PPL • Arnold • Bro</span>
+            </div>
+            <p className="text-xs text-blue-100 mt-0.5">Explore 7-day workout split programs or build your own custom schedule</p>
+          </div>
+        </div>
+        <ChevronRight className="w-5 h-5 text-white/80 shrink-0" />
+      </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
         {/* Left / Main Column: Routines List (Like Hevy Screenshot 2) */}
         <div className="lg:col-span-2 space-y-4">

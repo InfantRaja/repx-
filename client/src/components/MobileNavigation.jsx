@@ -36,13 +36,26 @@ export const MobileNavigation = () => {
         <NavLink
           to="/workouts"
           className={({ isActive }) =>
-            `flex flex-col items-center gap-1 py-1 px-3 text-[10px] font-bold transition-all ${
+            `flex flex-col items-center gap-1 py-1 px-2 text-[10px] font-bold transition-all ${
               isActive ? 'text-blue-600' : 'text-slate-400 hover:text-slate-600'
             }`
           }
         >
           <ClipboardList className="w-5 h-5" />
           <span>Routines</span>
+        </NavLink>
+
+        {/* Splits */}
+        <NavLink
+          to="/splits"
+          className={({ isActive }) =>
+            `flex flex-col items-center gap-1 py-1 px-2 text-[10px] font-bold transition-all ${
+              isActive ? 'text-blue-600' : 'text-slate-400 hover:text-slate-600'
+            }`
+          }
+        >
+          <Calendar className="w-5 h-5" />
+          <span>Splits</span>
         </NavLink>
 
         {/* Center Workout Action (Hevy Blue Button) */}

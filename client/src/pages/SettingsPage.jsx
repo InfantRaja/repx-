@@ -19,12 +19,55 @@ export const SettingsPage = () => {
   const [name, setName] = useState(user?.name || 'INFANT RAJA');
   const [bio, setBio] = useState(user?.bio || '');
   const [link, setLink] = useState('https://example.com');
-  const [unit, setUnit] = useState(user?.preferences?.unit || 'kg');
+  const [unit, setUnit] = useState(() => user?.preferences?.unit || localStorage.getItem('repx_unit') || 'kg');
+  const [distanceUnit, setDistanceUnit] = useState(() => localStorage.getItem('repx_distance_unit') || 'km');
+  const [theme, setTheme] = useState(() => localStorage.getItem('repx_theme') || 'light');
+  const [language, setLanguage] = useState(() => localStorage.getItem('repx_lang') || 'en');
   const [saving, setSaving] = useState(false);
   const [successMsg, setSuccessMsg] = useState('');
 
   const displayName = name || 'INFANT RAJA';
   const initial = displayName.charAt(0).toUpperCase() || 'I';
+
+  const handleUnitChange = async (newUnit) => {
+    setUnit(newUnit);
+    localStorage.setItem('repx_unit', newUnit);
+    try {
+      await updateProfile({
+        name,
+        bio,
+        preferences: { unit: newUnit },
+      });
+      setSuccessMsg(`Weight unit updated to ${newUnit.toUpperCase()}!`);
+      setTimeout(() => setSuccessMsg(''), 3000);
+    } catch (e) {
+      console.warn('Failed to update remote unit preference:', e);
+      setSuccessMsg(`Weight unit set to ${newUnit.toUpperCase()}!`);
+      setTimeout(() => setSuccessMsg(''), 3000);
+    }
+  };
+
+  const handleThemeChange = (newTheme) => {
+    setTheme(newTheme);
+    localStorage.setItem('repx_theme', newTheme);
+    if (newTheme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else if (newTheme === 'light') {
+      document.documentElement.classList.remove('dark');
+    } else {
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      document.documentElement.classList.toggle('dark', prefersDark);
+    }
+    setSuccessMsg(`Theme set to ${newTheme.toUpperCase()} mode!`);
+    setTimeout(() => setSuccessMsg(''), 3000);
+  };
+
+  const handleLanguageChange = (langCode, langName) => {
+    setLanguage(langCode);
+    localStorage.setItem('repx_lang', langCode);
+    setSuccessMsg(`Language switched to ${langName}!`);
+    setTimeout(() => setSuccessMsg(''), 3000);
+  };
 
   const handleSave = async (e) => {
     if (e) e.preventDefault();
@@ -35,6 +78,7 @@ export const SettingsPage = () => {
         bio,
         preferences: { unit },
       });
+      localStorage.setItem('repx_unit', unit);
       setSuccessMsg('Changes saved successfully!');
       setTimeout(() => setSuccessMsg(''), 3000);
     } catch (err) {
@@ -244,36 +288,213 @@ export const SettingsPage = () => {
           )}
 
           {activeTab === 'Units' && (
-            <div className="space-y-4 max-w-sm">
-              <label className="block text-xs font-bold text-slate-700">Weight Unit</label>
-              <div className="flex items-center gap-3">
+            <div className="space-y-6 max-w-xl">
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-2">Weight Unit</label>
+                <p className="text-xs text-slate-400 mb-3">Choose whether exercises, charts, and PRs display in kilograms or pounds.</p>
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    type="button"
+                    onClick={() => handleUnitChange('kg')}
+                    className={`py-3.5 px-4 rounded-xl text-xs font-bold border transition-all flex items-center justify-between ${
+                      unit === 'kg'
+                        ? 'bg-blue-50 border-blue-400 text-blue-600 shadow-sm'
+                        : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
+                    }`}
+                  >
+                    <span>Kilograms (kg)</span>
+                    {unit === 'kg' && <Check className="w-4 h-4 text-blue-600" />}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleUnitChange('lbs')}
+                    className={`py-3.5 px-4 rounded-xl text-xs font-bold border transition-all flex items-center justify-between ${
+                      unit === 'lbs'
+                        ? 'bg-blue-50 border-blue-400 text-blue-600 shadow-sm'
+                        : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
+                    }`}
+                  >
+                    <span>Pounds (lbs)</span>
+                    {unit === 'lbs' && <Check className="w-4 h-4 text-blue-600" />}
+                  </button>
+                </div>
+              </div>
+
+              <div className="pt-4 border-t border-slate-100">
+                <label className="block text-xs font-bold text-slate-700 mb-2">Distance Unit</label>
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setDistanceUnit('km');
+                      localStorage.setItem('repx_distance_unit', 'km');
+                      setSuccessMsg('Distance unit set to Kilometers (km)');
+                      setTimeout(() => setSuccessMsg(''), 3000);
+                    }}
+                    className={`py-3 px-4 rounded-xl text-xs font-bold border transition-all flex items-center justify-between ${
+                      distanceUnit === 'km'
+                        ? 'bg-blue-50 border-blue-400 text-blue-600 shadow-sm'
+                        : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
+                    }`}
+                  >
+                    <span>Kilometers (km)</span>
+                    {distanceUnit === 'km' && <Check className="w-4 h-4 text-blue-600" />}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setDistanceUnit('mi');
+                      localStorage.setItem('repx_distance_unit', 'mi');
+                      setSuccessMsg('Distance unit set to Miles (mi)');
+                      setTimeout(() => setSuccessMsg(''), 3000);
+                    }}
+                    className={`py-3 px-4 rounded-xl text-xs font-bold border transition-all flex items-center justify-between ${
+                      distanceUnit === 'mi'
+                        ? 'bg-blue-50 border-blue-400 text-blue-600 shadow-sm'
+                        : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
+                    }`}
+                  >
+                    <span>Miles (mi)</span>
+                    {distanceUnit === 'mi' && <Check className="w-4 h-4 text-blue-600" />}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'Theme' && (
+            <div className="space-y-4 max-w-xl">
+              <label className="block text-xs font-bold text-slate-700 mb-1">Appearance & Interface Theme</label>
+              <p className="text-xs text-slate-400 mb-4">Select your preferred color scheme for REPX.</p>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <button
                   type="button"
-                  onClick={() => setUnit('kg')}
-                  className={`flex-1 py-2.5 rounded-xl text-xs font-bold border transition-all ${
-                    unit === 'kg'
-                      ? 'bg-blue-50 border-blue-300 text-blue-600'
-                      : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
+                  onClick={() => handleThemeChange('light')}
+                  className={`p-4 rounded-2xl border text-left transition-all ${
+                    theme === 'light'
+                      ? 'border-2 border-blue-600 bg-blue-50/50 shadow-sm'
+                      : 'border-slate-200 hover:border-slate-300 bg-white'
                   }`}
                 >
-                  Kilograms (kg)
+                  <div className="w-8 h-8 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-amber-500 mb-3 shadow-xs">
+                    ☀️
+                  </div>
+                  <div className="font-bold text-xs text-slate-900">Light Mode</div>
+                  <div className="text-[11px] text-slate-500 mt-0.5">Clean gym aesthetic</div>
                 </button>
+
                 <button
                   type="button"
-                  onClick={() => setUnit('lbs')}
-                  className={`flex-1 py-2.5 rounded-xl text-xs font-bold border transition-all ${
-                    unit === 'lbs'
-                      ? 'bg-blue-50 border-blue-300 text-blue-600'
-                      : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
+                  onClick={() => handleThemeChange('dark')}
+                  className={`p-4 rounded-2xl border text-left transition-all ${
+                    theme === 'dark'
+                      ? 'border-2 border-blue-600 bg-blue-50/50 shadow-sm'
+                      : 'border-slate-200 hover:border-slate-300 bg-white'
                   }`}
                 >
-                  Pounds (lbs)
+                  <div className="w-8 h-8 rounded-xl bg-slate-900 text-white flex items-center justify-center mb-3 shadow-xs">
+                    <Moon className="w-4 h-4" />
+                  </div>
+                  <div className="font-bold text-xs text-slate-900">Dark Mode</div>
+                  <div className="text-[11px] text-slate-500 mt-0.5">OLED high contrast</div>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => handleThemeChange('system')}
+                  className={`p-4 rounded-2xl border text-left transition-all ${
+                    theme === 'system'
+                      ? 'border-2 border-blue-600 bg-blue-50/50 shadow-sm'
+                      : 'border-slate-200 hover:border-slate-300 bg-white'
+                  }`}
+                >
+                  <div className="w-8 h-8 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-700 mb-3 shadow-xs">
+                    ⚙️
+                  </div>
+                  <div className="font-bold text-xs text-slate-900">System Default</div>
+                  <div className="text-[11px] text-slate-500 mt-0.5">Follows device</div>
                 </button>
               </div>
             </div>
           )}
 
-          {activeTab !== 'Profile' && activeTab !== 'Units' && (
+          {activeTab === 'Language' && (
+            <div className="space-y-4 max-w-xl">
+              <label className="block text-xs font-bold text-slate-700 mb-1">Display Language</label>
+              <p className="text-xs text-slate-400 mb-4">Select your language for navigation, coach messages, and workout cues.</p>
+
+              <div className="space-y-2">
+                {[
+                  { code: 'en', name: 'English', native: 'English (US)', flag: '🇺🇸' },
+                  { code: 'es', name: 'Spanish', native: 'Español', flag: '🇪🇸' },
+                  { code: 'fr', name: 'French', native: 'Français', flag: '🇫🇷' },
+                  { code: 'de', name: 'German', native: 'Deutsch', flag: '🇩🇪' },
+                  { code: 'pt', name: 'Portuguese', native: 'Português', flag: '🇧🇷' },
+                  { code: 'hi', name: 'Hindi', native: 'हिंदी', flag: '🇮🇳' },
+                  { code: 'ta', name: 'Tamil', native: 'தமிழ்', flag: '🇮🇳' },
+                ].map((lang) => (
+                  <button
+                    key={lang.code}
+                    type="button"
+                    onClick={() => handleLanguageChange(lang.code, lang.name)}
+                    className={`w-full flex items-center justify-between p-3.5 rounded-xl border text-left transition-all ${
+                      language === lang.code
+                        ? 'border-blue-400 bg-blue-50/60 shadow-xs'
+                        : 'border-slate-200 hover:bg-slate-50'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="text-xl">{lang.flag}</span>
+                      <div>
+                        <div className="text-xs font-bold text-slate-800">{lang.name}</div>
+                        <div className="text-[10px] text-slate-400">{lang.native}</div>
+                      </div>
+                    </div>
+                    {language === lang.code && (
+                      <span className="w-6 h-6 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs font-bold">
+                        ✓
+                      </span>
+                    )}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'Account' && (
+            <div className="space-y-5 max-w-xl">
+              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
+                <div className="text-xs text-slate-400">Account Email</div>
+                <div className="text-sm font-bold text-slate-800 font-mono">{user?.email || 'athlete@repx.fit'}</div>
+              </div>
+              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
+                <div className="text-xs text-slate-400">User ID</div>
+                <div className="text-xs font-mono text-slate-600">{user?._id || 'athlete_repx_active_id'}</div>
+              </div>
+              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
+                <div className="text-xs text-slate-400">Account Status</div>
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                  <span className="text-xs font-bold text-emerald-600">Active REPX Athlete</span>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'PRO' && (
+            <div className="space-y-4 max-w-xl">
+              <div className="p-5 rounded-2xl bg-gradient-to-r from-amber-500/10 to-amber-500/5 border border-amber-300">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs font-black text-amber-600 tracking-wider uppercase">REPX PRO LIFETIME</span>
+                  <span className="px-2 py-0.5 rounded-full bg-amber-400 text-black text-[10px] font-black">ACTIVE</span>
+                </div>
+                <p className="text-xs text-slate-600">Unlimited custom workout splits, AI Coach assistance, advanced strength analytics, and cloud sync.</p>
+              </div>
+            </div>
+          )}
+
+          {activeTab !== 'Profile' && activeTab !== 'Units' && activeTab !== 'Theme' && activeTab !== 'Language' && activeTab !== 'Account' && activeTab !== 'PRO' && (
             <div className="text-center py-10 text-xs text-slate-400">
               {activeTab} settings configured.
             </div>

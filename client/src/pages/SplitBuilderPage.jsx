@@ -16,11 +16,12 @@ import {
 } from 'lucide-react';
 import API from '../services/api';
 import LoadingSkeleton from '../components/LoadingSkeleton';
+import { allSplitsData } from '../data/splitsData';
 
 export const SplitBuilderPage = () => {
-  const [splits, setSplits] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [activeSplitId, setActiveSplitId] = useState(null);
+  const [splits, setSplits] = useState(allSplitsData);
+  const [loading, setLoading] = useState(false);
+  const [activeSplitId, setActiveSplitId] = useState(allSplitsData[0]._id);
   const [activeTab, setActiveTab] = useState('library'); // 'library' | 'my-splits'
   const [selectedDayFilter, setSelectedDayFilter] = useState('all'); // 'all' | '6' | '5' | '4' | '3'
   const [actionSuccessMsg, setActionSuccessMsg] = useState('');
@@ -54,17 +55,19 @@ export const SplitBuilderPage = () => {
 
   const fetchSplits = async () => {
     try {
-      setLoading(true);
       const res = await API.get('/splits');
-      if (res.data?.success) {
+      if (res.data?.success && Array.isArray(res.data.data) && res.data.data.length > 0) {
         setSplits(res.data.data);
         const active = res.data.data.find((s) => s.isActive);
         if (active) setActiveSplitId(active._id);
+      } else {
+        setSplits(allSplitsData);
+        setActiveSplitId(allSplitsData[0]._id);
       }
     } catch (e) {
-      console.error('Failed to load splits:', e);
-    } finally {
-      setLoading(false);
+      console.warn('Using client-side splits templates fallback:', e);
+      setSplits(allSplitsData);
+      setActiveSplitId(allSplitsData[0]._id);
     }
   };
 
@@ -192,14 +195,16 @@ export const SplitBuilderPage = () => {
   };
 
   // Find the currently active split
-  const activeSplit = splits.find((s) => s._id === activeSplitId || s.isActive);
-  const todayWorkout = activeSplit?.days?.find((d) => d.dayNumber === currentDayOfWeek);
+  const effectiveSplits = splits.length > 0 ? splits : allSplitsData;
+  const activeSplit = effectiveSplits.find((s) => s._id === activeSplitId || s.isActive) || effectiveSplits[0];
+  const todayWorkout = activeSplit?.days?.find((d) => d.dayNumber === currentDayOfWeek) || activeSplit?.days?.[0];
 
   // Filter splits for library
-  const templateSplits = splits.filter((s) => s.isTemplate);
-  const userCustomSplits = splits.filter((s) => !s.isTemplate);
+  const templateSplits = effectiveSplits.filter((s) => s.isTemplate);
+  const displayTemplates = templateSplits.length > 0 ? templateSplits : allSplitsData;
+  const userCustomSplits = effectiveSplits.filter((s) => !s.isTemplate);
 
-  const filteredTemplates = templateSplits.filter((split) => {
+  const filteredTemplates = displayTemplates.filter((split) => {
     if (selectedDayFilter === 'all') return true;
     const workoutDaysCount = (split.days || []).filter((d) => !d.isRestDay).length;
     return workoutDaysCount.toString() === selectedDayFilter;
